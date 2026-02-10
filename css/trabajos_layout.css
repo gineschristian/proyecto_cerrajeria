@@ -1,0 +1,184 @@
+/* Contenedor que divide la pantalla en dos */
+.trabajos-container-dual {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 20px;
+    align-items: flex-start; /* Alinea arriba */
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Columna izquierda (30% de la pantalla aprox) */
+.columna-formulario {
+    flex: 1;
+    min-width: 350px;
+    position: sticky; /* Se queda fijo al hacer scroll si la pantalla es alta */
+    top: 20px;
+}
+
+/* Columna derecha (70% de la pantalla aprox) */
+.columna-tabla {
+    flex: 2.5;
+    min-width: 600px;
+}
+
+/* Estilo para que la tabla no se salga y tenga scroll propio */
+.tabla-scroll-vertical {
+    max-height: 80vh; /* Altura máxima del 80% de la pantalla */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Diseño especial para el recuadro de material */
+.zona-material {
+    background: rgba(131, 2, 2, 0.08);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px dashed var(--rojo-principal);
+    margin-bottom: 15px;
+}
+.factura-selector {
+    background: rgba(39, 174, 96, 0.1); /* Un tono verde suave */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+    margin-bottom: 15px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.radio-label {
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Ajuste para móviles: se pone uno debajo del otro */
+@media (max-width: 1024px) {
+    .trabajos-container-dual {
+        flex-direction: column;
+    }
+    .columna-formulario, .columna-tabla {
+        width: 100%;
+        min-width: unset;
+    }
+    .columna-formulario {
+        position: static;
+    }
+}
+.filtros-fecha {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    background: #f4f4f4;
+    padding: 10px 15px;
+    border-radius: 8px;
+}
+
+.input-filtro {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.input-style-mini {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn-filtro {
+    background: var(--rojo-principal);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-filtro:hover {
+    background: #a00000;
+}
+/* Contenedor de las tarjetas */
+.tarjetas-resumen {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0 30px 0;
+}
+
+.card {
+    flex: 1;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Colores de fondo suaves para que el negro resalte mejor */
+.oficial { background: #a9dfbf; } /* Verde suave */
+.extra { background: #f9e79f; }   /* Amarillo/Naranja suave */
+.total-caja { background: #aed6f1; } /* Azul suave */
+
+/* Estilo de los dígitos */
+.card p { 
+    font-size: 2.2em; 
+    margin: 10px 0; 
+    font-weight: 800; /* Extra negrita */
+    color: #000000;   /* Negro puro */
+}
+
+.card h3 {
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+}
+
+.card small {
+    color: #555;
+    font-weight: 600;
+}
+.badge-cat {
+    background: #ecf0f1;
+    color: #2c3e50;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+    border: 1px solid #bdc3c7;
+}
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background: white;
+    width: 400px;
+    padding: 25px;
+    border-radius: 12px;
+}
+.btn-cancelar {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}

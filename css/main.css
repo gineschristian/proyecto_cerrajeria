@@ -1,0 +1,522 @@
+/* 1. Variables Globales */
+:root {
+    --rojo-principal: #2c3e50;
+    --rojo-oscuro: #330104;
+    --blanco: #ffffff;
+    --gris-fondo: #f8f9fa;
+    --gris-texto: #333333;
+    --sombra: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --glass-bg: rgba(255, 255, 255, 0.92);
+}
+
+/* 2. Reset y Configuración de Fondo */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                url('../img/foto-cerrajeria.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* 3. Encabezado */
+header {
+    background-color: var(--rojo-principal);
+    color: var(--blanco);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--sombra);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+header h1 {
+    color: var(--blanco);
+    font-size: 1.4rem;
+}
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* 4. Contenedores Principales */
+.dashboard-container, .stock-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.dashboard-container {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    justify-content: center;
+}
+
+/* 5. Tarjetas Estilo Cristal */
+.card, .card-formulario, .table-card {
+    background: var(--glass-bg) !important;
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: 0.3s;
+    margin-bottom: 30px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.card:hover, .card-formulario:hover {
+    transform: translateY(-5px);
+}
+
+.card h3, .card-formulario h2, .table-card h2 {
+    color: var(--rojo-principal);
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
+    padding-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* 6. Formulario de Stock Ajustado */
+.mi-formulario {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: var(--gris-texto);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+}
+
+/* 7. Botones Unificados */
+.btn-acceder, .btn-guardar {
+    background-color: var(--rojo-principal);
+    color: white !important;
+    padding: 12px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-align: center;
+}
+
+.btn-acceder { margin-top: auto; }
+
+.btn-acceder:hover, .btn-guardar:hover {
+    background-color: var(--rojo-oscuro);
+}
+
+/* 8. Tabla Profesional de Cristal */
+#tablaStock {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+#tablaStock th {
+    background-color: rgba(131, 2, 2, 0.05);
+    color: var(--rojo-principal);
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid var(--rojo-principal);
+}
+
+#tablaStock td {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.4);
+    color: var(--gris-texto);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+#tablaStock tr:hover td {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* 9. Elementos de Tabla (Badges e Imágenes) */
+.img-tabla {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.ok { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.low { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.empty { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+/* 10. Utilidades Logout */
+#logoutBtn {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#logoutBtn:hover {
+    background: white;
+    color: var(--rojo-principal);
+}
+
+/* 11. Guía Lateral */
+.guia-sidebar {
+    position: fixed;
+    right: -350px;
+    top: 0;
+    width: 320px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+    transition: all 0.4s ease-in-out;
+    z-index: 2000;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.guia-sidebar.active { right: 0; }
+
+.guia-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--rojo-principal);
+    padding-bottom: 10px;
+}
+
+.guia-body p {
+    margin-bottom: 15px;
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
+.verde { background-color: #28a745; }
+.naranja { background-color: #ffc107; }
+.rojo { background-color: #dc3545; }
+
+.btn-cerrar {
+    background: var(--rojo-principal);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.btn-ayuda {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--rojo-principal);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 3px solid white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 1500;
+    transition: transform 0.3s;
+}
+
+.btn-ayuda:hover { transform: scale(1.1); }
+
+/* 12. Buscador */
+.search-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+    position: relative;
+}
+
+#buscadorStock {
+    width: 100%;
+    padding: 15px 20px 15px 45px;
+    font-size: 1rem;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--gris-texto);
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid transparent;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+#buscadorStock:focus {
+    background: var(--blanco);
+    border-color: var(--rojo-principal);
+    box-shadow: 0 8px 25px rgba(131, 2, 2, 0.2);
+    transform: translateY(-2px);
+}
+
+.search-container::before {
+    content: '🔍';
+    position: absolute;
+    left: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    opacity: 0.5;
+}
+
+/* 13. Modales */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    animation: aparecer 0.3s ease-out;
+}
+
+@keyframes aparecer {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 14. Gestión de Empleados (TUS ESTILOS ORIGINALES) */
+.gestion-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.user-card-form {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    border-left: 5px solid #8e44ad;
+}
+
+.user-card-form h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    align-items: end;
+}
+
+.input-group-user {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-group-user label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 600;
+}
+
+.input-group-user input, .input-group-user select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.btn-add-user {
+    background: #8e44ad;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-add-user:hover {
+    background: #732d91;
+    transform: translateY(-2px);
+}
+
+.user-table-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-table th {
+    background: #f8f9fa;
+    color: #2c3e50;
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #eee;
+}
+
+.user-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.badge-admin { background: #fce4ec; color: #d81b60; }
+.badge-empleado { background: #f3e5f5; color: #8e44ad; }
+
+.btn-delete {
+    background: #ff7675;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.3s;
+}
+
+.btn-delete:hover {
+    background: #d63031;
+    transform: scale(1.05);
+}
+
+/* --- SECCIÓN CORREGIDA: RESPONSIVE SOLO TABLAS --- */
+@media (max-width: 768px) {
+    /* Escondemos los encabezados de las tablas originales */
+    #tablaStock thead, .user-table thead {
+        display: none;
+    }
+
+    /* Convertimos cada fila en una tarjeta individual */
+    #tablaStock tr, .user-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Cada celda se comporta como una línea con un título a la izquierda */
+    #tablaStock td, .user-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 5px;
+        border-bottom: 1px solid #eee;
+        text-align: right;
+    }
+
+    #tablaStock td:last-child, .user-table td:last-child {
+        border-bottom: none;
+        justify-content: center;
+    }
+
+    /* Inyectamos el nombre de la columna desde el data-label */
+    #tablaStock td::before, .user-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-align: left;
+        color: var(--rojo-principal);
+        font-size: 0.85rem;
+        flex: 1;
+    }
+
+    /* Botones grandes para dedos */
+    .btn-acceder, .btn-guardar, .btn-add-user, button {
+        min-height: 48px;
+        padding: 12px 20px;
+        font-size: 16px;
+        border-radius: 10px;
+        touch-action: manipulation;
+    }
+}

@@ -1,0 +1,88 @@
+:root {
+    --rojo-principal: #2c3e50;     /* Rojo tipo seguridad/herramientas */
+    --rojo-oscuro: #330104;        /* Para el efecto al pasar el ratón */
+    --blanco: #ffffff;
+    --gris-fondo: #f8f9fa;
+    --gris-texto: #333333;
+    --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    
+}
+
+/* El header se queda en su sitio (arriba) */
+header {
+    background-color: var(--rojo-principal);
+    color: var(--blanco);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--sombra);
+}
+
+/* La sección de login ocupa el resto del espacio y centra el contenido */
+.auth-page {
+    flex-grow: 1; /* Ocupa todo el espacio sobrante */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+}
+
+/* La tarjeta blanca */
+.auth-container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-top: 5px solid #d32f2f; /* El rojo que querías */
+    width: 100%;
+    max-width: 400px;
+}
+.auth-container h2 {
+    margin-bottom: 25px;
+    font-size: 24px;
+}
+
+.auth-container .input-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.auth-container label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.auth-footer {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.auth-footer a {
+    color: #d32f2f;
+    text-decoration: none;
+    font-weight: bold;
+}
+button, .btn-acceder, .btn-header {
+    background-color: var(--rojo-principal);
+    color: var(--blanco);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+    display: inline-block;
+}
+
