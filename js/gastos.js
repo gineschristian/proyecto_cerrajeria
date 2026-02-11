@@ -44,6 +44,8 @@ function abrirEditarGasto(gasto) {
     document.getElementById('edit_id').value = gasto.id;
     document.getElementById('edit_concepto').value = gasto.concepto;
     document.getElementById('edit_monto').value = gasto.monto;
+    document.getElementById('edit_categoria').value = gasto.categoria; // Asegura la categoría
+    document.getElementById('edit_factura').value = gasto.con_factura; // <--- AÑADE ESTA LÍNEA
     document.getElementById('modalEditarGasto').style.display = 'flex';
 }
 

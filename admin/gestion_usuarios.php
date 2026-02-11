@@ -1,11 +1,26 @@
 <?php
-session_start();
-// Seguridad estricta: Solo el administrador puede ver esta página
-if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 1. Verificamos si existe la sesión
+if (!isset($_SESSION['usuario_id'])) {
+    // CORRECCIÓN: Apuntamos al index.html en la raíz
+    header("Location: ../index.html");
+    exit();
+}
+
+// 2. Verificamos el rol (usando trim por seguridad de la BD)
+$rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
+
+if ($rol !== 'admin') {
+    // Si es empleado, lo devolvemos al dashboard con un mensaje
     header("Location: dashboard.php?error=acceso_denegado");
     exit();
 }
-include '../php/conexion.php';
+
+// Si llega aquí, es Admin y puede ver el contenido
+include '../php/conexion.php'; 
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +60,7 @@ include '../php/conexion.php';
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajería Pinos" class="logo-img">
-            <h1>Gestión de Personal</h1>
+            <h1>Gestión de Personal - Cerajeria Pinos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>

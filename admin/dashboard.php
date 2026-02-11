@@ -1,7 +1,8 @@
 <?php
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../public/login.html");
+    // Si intenta entrar sin login, lo mandamos a la raíz donde está el index.html
+    header("Location: ../index.html");
     exit();
 }
 $esAdmin = ($_SESSION['rol'] === 'admin');
@@ -77,7 +78,7 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
     <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #2c3e50; color: white;">
         <div class="header-content" style="display: flex; align-items: center; gap: 15px;">
             <img src="../img/logo.png" alt="Logo" class="logo-img" style="height: 50px;">
-            <h1 style="margin: 0;">Hola, <?php echo explode(' ', htmlspecialchars($_SESSION['nombre']))[0]; ?></h1>
+            <h1 style="margin: 0;">Hola David, <?php echo explode(' ', htmlspecialchars($_SESSION['nombre']))[0]; ?></h1>
         </div>
         <a href="../php/logout.php"><button style="background:#e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button></a>
     </header>

@@ -1,13 +1,26 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 1. Verificamos si existe la sesión
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../public/login.html");
+    // CORRECCIÓN: Apuntamos al index.html en la raíz
+    header("Location: ../index.html");
     exit();
 }
-if ($_SESSION['rol'] !== 'admin') {
+
+// 2. Verificamos el rol (usando trim por seguridad de la BD)
+$rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
+
+if ($rol !== 'admin') {
+    // Si es empleado, lo devolvemos al dashboard con un mensaje
     header("Location: dashboard.php?error=acceso_denegado");
     exit();
 }
+
+// Si llega aquí, es Admin y puede ver el contenido
+include '../php/conexion.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -40,13 +53,30 @@ if ($_SESSION['rol'] !== 'admin') {
                 flex: 1;
             }
         }
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .btn-header {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Ingresos</h1>
+            <h1>Ingresos - Cerrajeria Pinos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>

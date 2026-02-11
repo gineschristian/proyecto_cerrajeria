@@ -1,13 +1,26 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 1. Verificamos si existe la sesión
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../public/login.html"); // Si no hay sesión, al login
+    // CORRECCIÓN: Apuntamos al index.html en la raíz
+    header("Location: ../index.html");
     exit();
 }
-if ($_SESSION['rol'] !== 'admin') {
+
+// 2. Verificamos el rol (usando trim por seguridad de la BD)
+$rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
+
+if ($rol !== 'admin') {
+    // Si es empleado, lo devolvemos al dashboard con un mensaje
     header("Location: dashboard.php?error=acceso_denegado");
     exit();
 }
+
+// Si llega aquí, es Admin y puede ver el contenido
+include '../php/conexion.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -20,12 +33,31 @@ if ($_SESSION['rol'] !== 'admin') {
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
+    <style>
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .btn-header {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo" class="logo-img">
-            <h1>Control de Extras - Caja B</h1>
+            <h1>Control de Extras - Cerrajeria Pinos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header" > 🏠 Panel de Control</a>
@@ -33,7 +65,6 @@ if ($_SESSION['rol'] !== 'admin') {
         <a href="impuestos.php" class="btn-header" >📊 Impuestos</a>
         <a href="gestion_usuarios.php" class="btn-header">👥 Empleados </a>
         <a href="ingresos.php" class="btn-header" >💰 Ingresos</a>
-        <a href="ingresosb.php" class="btn-header" >🤫 Extras</a>
         <a href="trabajos.php" class="btn-header" >🛠️ Trabajos</a>
         <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
         <a href="gastos.php" class="btn-header" > 💸 Gastos</a>

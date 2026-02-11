@@ -1,10 +1,19 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 1. Verificamos que esté logueado
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../public/login.html");
+    header("Location: ../index.html");
     exit();
 }
-$esAdmin = ($_SESSION['rol'] === 'admin');
+
+// 2. DEFINIMOS LA VARIABLE QUE FALTA (Soluciona el error de la imagen)
+$esAdmin = (isset($_SESSION['rol']) && strtolower(trim($_SESSION['rol'])) === 'admin');
+
+// 3. Incluimos la conexión con la ruta correcta (subiendo un nivel)
+include '../php/conexion.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -16,12 +25,31 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
     <title>Plantillas - Cerrajería Pinos</title>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
+    <style>
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .btn-header {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Plantillas y Documentos</h1>
+            <h1>Plantillas y Documentos - Cerrajería Pinos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>

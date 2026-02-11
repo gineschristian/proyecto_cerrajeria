@@ -1,30 +1,44 @@
 <?php
+// php/obtener_datos_grafica.php
+header('Content-Type: application/json');
 include 'conexion.php';
 
-$meses = [];
+$labels = [];
 $ingresos = [];
 $gastos = [];
 
-// Consultamos los últimos 6 meses
+// Calculamos los últimos 6 meses
 for ($i = 5; $i >= 0; $i--) {
-    $fechaMes = date('Y-m', strtotime("-$i months"));
-    $nombreMes = date('M', strtotime("-$i months"));
-    $meses[] = $nombreMes;
+    $fecha_mes = date('Y-m', strtotime("-$i month"));
+    $nombre_mes = date('M', strtotime("-$i month")); // Ene, Feb, Mar...
+    
+    $labels[] = $nombre_mes;
 
-    // Sumar Ingresos (Trabajos + Extras)
-    $resI = mysqli_query($conexion, "SELECT SUM(precio_total) as total FROM trabajos WHERE fecha LIKE '$fechaMes%'");
-    $resE = mysqli_query($conexion, "SELECT SUM(monto) as total FROM ingresos_b WHERE fecha LIKE '$fechaMes%'");
-    $totalI = (mysqli_fetch_assoc($resI)['total'] ?? 0) + (mysqli_fetch_assoc($resE)['total'] ?? 0);
-    $ingresos[] = $totalI;
+    // 1. Sumar Ingresos del mes (Trabajos A + Trabajos B)
+    $sql_i = "SELECT SUM(precio_total) as total FROM trabajos 
+              WHERE fecha LIKE '$fecha_mes%'";
+    $res_i = mysqli_query($conexion, $sql_i);
+    $row_i = mysqli_fetch_assoc($res_i);
+    $total_i = $row_i['total'] ?? 0;
 
-    // Sumar Gastos
-    $resG = mysqli_query($conexion, "SELECT SUM(monto) as total FROM gastos WHERE fecha LIKE '$fechaMes%'");
-    $gastos[] = mysqli_fetch_assoc($resG)['total'] ?? 0;
+    // Sumamos también ingresos_b si tienes esa tabla separada
+    $sql_eb = "SELECT SUM(monto) as total FROM ingresos_b WHERE fecha LIKE '$fecha_mes%'";
+    $res_eb = mysqli_query($conexion, $sql_eb);
+    $total_eb = mysqli_fetch_assoc($res_eb)['total'] ?? 0;
+    
+    $ingresos[] = (float)($total_i + $total_eb);
+
+    // 2. Sumar Gastos del mes
+    $sql_g = "SELECT SUM(monto) as total FROM gastos 
+              WHERE fecha LIKE '$fecha_mes%'";
+    $res_g = mysqli_query($conexion, $sql_g);
+    $row_g = mysqli_fetch_assoc($res_g);
+    $gastos[] = (float)($row_g['total'] ?? 0);
 }
 
+// Enviamos los datos en formato JSON para Chart.js
 echo json_encode([
-    'labels' => $meses,
+    'labels' => $labels,
     'ingresos' => $ingresos,
     'gastos' => $gastos
 ]);
-?>

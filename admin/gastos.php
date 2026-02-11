@@ -1,13 +1,23 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// 1. Verificamos si existe la sesión
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: ../public/login.html");
+    header("Location: ../index.html");
     exit();
 }
-if ($_SESSION['rol'] !== 'admin') {
+
+// 2. Verificamos el rol
+$rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
+
+if ($rol !== 'admin') {
     header("Location: dashboard.php?error=acceso_denegado");
     exit();
 }
+
+include '../php/conexion.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -21,7 +31,6 @@ if ($_SESSION['rol'] !== 'admin') {
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
     <style>
-        /* Ajustes específicos para el layout dual en móvil */
         @media (max-width: 992px) {
             .trabajos-container-dual {
                 display: flex;
@@ -39,13 +48,30 @@ if ($_SESSION['rol'] !== 'admin') {
                 gap: 15px;
             }
         }
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .btn-header {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo" class="logo-img">
-            <h1>Control de Gastos</h1>
+            <h1>Control de Gastos - Cerrajeria Pinos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -61,7 +87,6 @@ if ($_SESSION['rol'] !== 'admin') {
     </header>
 
     <main class="trabajos-container-dual"> 
-        
         <aside class="columna-formulario">
             <div class="card-formulario" style="border-top: 5px solid #c0392b;">
                 <h2>Registrar Compra / Gasto</h2>
@@ -89,9 +114,9 @@ if ($_SESSION['rol'] !== 'admin') {
 
                     <div class="input-group">
                         <label for="gasto_factura">¿Tiene factura oficial?</label>
-                        <select name="factura" id="gasto_factura" class="input-style" required>
+                        <select name="con_factura" id="gasto_factura" class="input-style" required>
                             <option value="0">No (Ticket/Recibo B)</option>
-                            <option value="1">Sí (Factura con IVA)</option>
+                            <option value="1" selected>Sí (Factura con IVA)</option>
                         </select>
                     </div>
 
@@ -111,7 +136,8 @@ if ($_SESSION['rol'] !== 'admin') {
                 </div>
 
                 <div class="tabla-scroll-vertical">
-                    <table class="user-table"> <thead>
+                    <table class="user-table"> 
+                        <thead>
                             <tr>
                                 <th>Fecha</th>
                                 <th>Concepto</th>
