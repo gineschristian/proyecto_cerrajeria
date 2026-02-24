@@ -64,17 +64,50 @@ include '../php/conexion.php';
         }
         
         .nav-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+
+        /* Estilo Botón PDF */
+        .btn-pdf {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px; }
             .filtros-fecha { flex-direction: column; width: 100%; }
         }
+
+        /* CONFIGURACIÓN PARA IMPRESIÓN PDF */
+        @media print {
+            header, nav, .nav-container, .simulador-box, .btn-filtro, .btn-pdf, .header-tabla-dinamica button {
+                display: none !important;
+            }
+            body { background: white; padding: 0; }
+            .trabajos-layout { padding: 0; }
+            .card-impuesto {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                color: black !important;
+                background: white !important;
+            }
+            .card-impuesto h2, .card-impuesto h3 { color: black !important; }
+            .table-card { box-shadow: none; border: 1px solid #eee; }
+        }
+        
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Impuestos-Cerrajeria Pinos</h1>
+            <h1>Impuestos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -86,6 +119,7 @@ include '../php/conexion.php';
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+            <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>
@@ -99,6 +133,7 @@ include '../php/conexion.php';
                     <input type="date" id="fechaInicioImp" class="input-style-mini" value="<?php echo date('Y-m-01'); ?>">
                     <input type="date" id="fechaFinImp" class="input-style-mini" value="<?php echo date('Y-m-t'); ?>">
                     <button onclick="calcularImpuestos()" class="btn-filtro" style="background: #2c3e50; color:white; border:none; padding: 10px; border-radius:5px; cursor:pointer;">Actualizar Datos</button>
+                    <button onclick="window.print()" class="btn-pdf">📄 PDF</button>
                 </div>
             </div>
         </section>

@@ -9,7 +9,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// 2. Verificamos el rol
+// 2. Verificamos el rol (Solo Admin puede gestionar gastos detallados)
 $rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
 
 if ($rol !== 'admin') {
@@ -18,6 +18,10 @@ if ($rol !== 'admin') {
 }
 
 include '../php/conexion.php'; 
+
+// Pre-consulta de proveedores para usar en los selects
+$query_prov = "SELECT id, nombre FROM proveedores ORDER BY nombre ASC";
+$res_prov = mysqli_query($conexion, $query_prov);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -31,47 +35,98 @@ include '../php/conexion.php';
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
     <style>
-        @media (max-width: 992px) {
-            .trabajos-container-dual {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                padding: 10px;
-            }
-            .columna-formulario, .columna-tabla {
-                width: 100% !important;
-            }
-            .header-tabla-dinamica {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 15px;
-            }
-        }
-        .nav-container {
+        /* --- ESTILOS PARA EL FILTRO DE CALENDARIO --- */
+        .contenedor-filtros {
             display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fdf2f2;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #f5b7b1;
             flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 10px;
         }
+        .filtro-fecha {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .btn-filtrar-fecha {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 7px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-limpiar-fecha {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 7px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* --- ESTILOS WEB ORIGINALES --- */
+        @media (max-width: 992px) {
+            .trabajos-container-dual { display: flex; flex-direction: column; gap: 20px; padding: 10px; }
+            .columna-formulario, .columna-tabla { width: 100% !important; }
+            .header-tabla-dinamica { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+            .contenedor-filtros { justify-content: center; }
+        }
+        .nav-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+        .input-style { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-top: 5px; }
+        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-left: 10px; }
+        .print-only { display: none; }
+
         @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                padding: 15px;
+            header { flex-direction: column; padding: 15px; }
+            .btn-header { font-size: 0.8rem; padding: 8px 12px; }
+        }
+
+        /* ----------------------------------------------------------------
+            CONFIGURACIÓN PDF: SIN ACCIÓN Y ANCHO COMPLETO
+        ------------------------------------------------------------------- */
+        @media print {
+            header, nav, .nav-container, .columna-formulario, .btn-pdf, .contenedor-filtros,
+            #modalEditarGasto, .btn-guardar, .btn-cancelar, 
+            th:last-child, td:last-child {
+                display: none !important;
             }
-            .btn-header {
-                font-size: 0.8rem;
-                padding: 8px 12px;
-            }
+
+            body { background: white !important; margin: 0 !important; padding: 0 !important; }
+            .trabajos-container-dual { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .columna-tabla { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .table-card { box-shadow: none !important; border: none !important; width: 100% !important; padding: 0 !important; }
+
+            .user-table { display: table !important; width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; }
+            .user-table thead { display: table-header-group !important; }
+            .user-table tr { display: table-row !important; }
+            .user-table th, .user-table td { display: table-cell !important; border: 1px solid #000 !important; padding: 6px !important; font-size: 9pt !important; text-align: left !important; }
+            .user-table td::before { content: none !important; display: none !important; }
+
+            .print-only { display: block !important; text-align: center; margin-bottom: 15px; border-bottom: 1px solid #000; padding-bottom: 10px; }
+            .header-tabla-dinamica { display: flex !important; justify-content: center !important; margin-bottom: 15px !important; }
+            .header-tabla-dinamica h2 { display: none !important; }
+            .contador-total { background: #f5b7b1 !important; border: 1px solid #000 !important; width: auto !important; min-width: 250px; padding: 8px 20px !important; border-radius: 0 !important; }
+            .tabla-scroll-vertical { overflow: visible !important; height: auto !important; }
         }
     </style>
 </head>
 <body>
+    <div class="print-only">
+        <h1 style="margin:0;">CERRAJERÍA PINOS</h1>
+        <p style="margin:5px 0;">Informe Detallado de Gastos | Fecha: <?php echo date('d/m/Y'); ?></p>
+    </div>
+
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo" class="logo-img">
-            <h1>Control de Gastos - Cerrajeria Pinos</h1>
+            <h1>Gastos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -83,7 +138,8 @@ include '../php/conexion.php';
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
-            <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
+            <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+            <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>
 
@@ -93,10 +149,23 @@ include '../php/conexion.php';
                 <h2>Registrar Compra / Gasto</h2>
                 <form id="formGasto" class="mi-formulario">
                     <div class="input-group">
-                        <label>Concepto / Proveedor</label>
-                        <input type="text" name="concepto" placeholder="Ej: Compra bombines Yale" required>
+                        <label>Seleccionar Proveedor</label>
+                        <select name="proveedor" id="gasto_proveedor" class="input-style" required>
+                            <option value="">-- Seleccione un proveedor --</option>
+                            <?php 
+                            mysqli_data_seek($res_prov, 0);
+                            while($p = mysqli_fetch_assoc($res_prov)): ?>
+                                <option value="<?php echo htmlspecialchars($p['nombre']); ?>">
+                                    <?php echo htmlspecialchars($p['nombre']); ?>
+                                </option>
+                            <?php endwhile; ?>
+                            <option value="Otros">Varios / Otros</option>
+                        </select>
                     </div>
-
+                    <div class="input-group">
+                        <label>Concepto / Detalle</label>
+                        <input type="text" name="concepto" placeholder="Ej: Compra de 20 bombines" required>
+                    </div>
                     <div class="input-group">
                         <label>Categoría</label>
                         <select name="categoria" class="input-style">
@@ -107,12 +176,10 @@ include '../php/conexion.php';
                             <option value="Otros">Otros</option>
                         </select>
                     </div>
-
                     <div class="input-group">
                         <label>Monto Total (€)</label>
                         <input type="number" name="monto" step="0.01" placeholder="0.00" required>
                     </div>
-
                     <div class="input-group">
                         <label for="gasto_factura">¿Tiene factura oficial?</label>
                         <select name="con_factura" id="gasto_factura" class="input-style" required>
@@ -120,27 +187,44 @@ include '../php/conexion.php';
                             <option value="1" selected>Sí (Factura con IVA)</option>
                         </select>
                     </div>
-
-                    <button type="submit" class="btn-guardar" style="background: #c0392b; width: 100%; margin-top: 10px;">Registrar Gasto</button>
+                    <button type="submit" class="btn-guardar" style="background: #c0392b; width: 100%; margin-top: 10px;">💾 Registrar Gasto</button>
                 </form>
             </div>
         </aside>
 
         <section class="columna-tabla">
             <div class="table-card">
-                <div class="header-tabla-dinamica">
+                
+                <div class="contenedor-filtros">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <label style="font-weight:bold; font-size:0.9rem;">Desde:</label>
+                        <input type="date" id="fechaInicio" class="filtro-fecha">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <label style="font-weight:bold; font-size:0.9rem;">Hasta:</label>
+                        <input type="date" id="fechaFin" class="filtro-fecha">
+                    </div>
+                    <button type="button" class="btn-filtrar-fecha" onclick="filtrarGastosFecha()">Filtrar</button>
+                    <button type="button" class="btn-limpiar-fecha" onclick="limpiarFiltroFecha()">Reset</button>
+                </div>
+
+                <div class="header-tabla-dinamica" style="display:flex; justify-content: space-between; align-items: center;">
                     <h2 style="margin:0; border:none;">Historial de Gastos</h2>
-                    <div class="contador-total" style="background: #f5b7b1; padding: 10px 20px; border-radius: 10px;">
-                        <span class="etiqueta" style="font-weight:bold;">Total Gastado:</span>
-                        <span class="cifra" id="totalGastos" style="color: black; font-weight:bold; font-size: 1.2rem;">0.00€</span>
+                    <div style="display:flex; align-items:center;">
+                        <div class="contador-total" style="background: #f5b7b1; padding: 10px 20px; border-radius: 10px;">
+                            <span class="etiqueta" style="font-weight:bold;">Total Gastado:</span>
+                            <span class="cifra" id="totalGastos" style="color: black; font-weight:bold; font-size: 1.2rem;">0.00€</span>
+                        </div>
+                        <button onclick="window.print()" class="btn-pdf">📄 PDF</button>
                     </div>
                 </div>
 
                 <div class="tabla-scroll-vertical">
-                    <table class="user-table"> 
+                    <table class="user-table" id="tablaGastos"> 
                         <thead>
                             <tr>
                                 <th>Fecha</th>
+                                <th>Proveedor</th>
                                 <th>Concepto</th>
                                 <th>Categoría</th>
                                 <th>Factura</th>
@@ -162,12 +246,23 @@ include '../php/conexion.php';
             <h2 style="color: #c0392b; margin-bottom: 20px;">Editar Gasto</h2>
             <form id="formEditarGasto" class="mi-formulario">
                 <input type="hidden" name="id" id="edit_id">
-                
                 <div class="input-group">
-                    <label>Concepto / Proveedor</label>
+                    <label>Proveedor</label>
+                    <select name="proveedor" id="edit_proveedor" class="input-style">
+                        <?php 
+                        mysqli_data_seek($res_prov, 0);
+                        while($p = mysqli_fetch_assoc($res_prov)): ?>
+                            <option value="<?php echo htmlspecialchars($p['nombre']); ?>">
+                                <?php echo htmlspecialchars($p['nombre']); ?>
+                            </option>
+                        <?php endwhile; ?>
+                        <option value="Otros">Varios / Otros</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Concepto / Detalle</label>
                     <input type="text" name="concepto" id="edit_concepto" required>
                 </div>
-
                 <div class="input-group">
                     <label>Categoría</label>
                     <select name="categoria" id="edit_categoria" class="input-style">
@@ -178,12 +273,10 @@ include '../php/conexion.php';
                         <option value="Otros">Otros</option>
                     </select>
                 </div>
-
                 <div class="input-group">
                     <label>Monto (€)</label>
                     <input type="number" name="monto" id="edit_monto" step="0.01" required>
                 </div>
-
                 <div class="input-group">
                     <label>Factura</label>
                     <select name="con_factura" id="edit_factura" class="input-style">
@@ -191,10 +284,9 @@ include '../php/conexion.php';
                         <option value="0">No (Ticket)</option>
                     </select>
                 </div>
-
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" class="btn-guardar" style="background: #c0392b; flex: 1;">Guardar</button>
-                    <button type="button" onclick="cerrarModal()" class="btn-cancelar" style="background: #95a5a6; flex: 1; border: none; color: white; border-radius: 5px; cursor: pointer;">Cerrar</button>
+                    <button type="submit" class="btn-guardar" style="background: #c0392b; flex: 1;">Guardar Cambios</button>
+                    <button type="button" onclick="document.getElementById('modalEditarGasto').style.display='none'" class="btn-cancelar" style="background: #95a5a6; flex: 1; border: none; color: white; border-radius: 5px; cursor: pointer;">Cancelar</button>
                 </div>
             </form>
         </div>

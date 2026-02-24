@@ -9,6 +9,7 @@ $esAdmin = (isset($_SESSION['rol']) && strtolower(trim($_SESSION['rol'])) === 'a
 
 $inicio = $_GET['inicio'] ?? '';
 $fin = $_GET['fin'] ?? '';
+$empleadoFiltro = $_GET['empleado'] ?? ''; // NUEVO: Capturamos el nombre del empleado
 
 // Consulta para traer los datos y el nombre del empleado
 $query = "SELECT t.*, u.nombre as nombre_empleado,
@@ -19,14 +20,23 @@ $query = "SELECT t.*, u.nombre as nombre_empleado,
           LEFT JOIN productos p ON tm.producto_id = p.id ";
 
 $condiciones = [];
+
+// 1. Si no es admin, solo ve sus propios trabajos
 if (!$esAdmin) {
     $condiciones[] = "t.usuario_id = '$usuario_id_sesion'";
 }
 
+// 2. Filtro por fechas
 if (!empty($inicio) && !empty($fin)) {
     $inicioClean = mysqli_real_escape_string($conexion, $inicio);
     $finClean = mysqli_real_escape_string($conexion, $fin);
     $condiciones[] = "t.fecha BETWEEN '$inicioClean 00:00:00' AND '$finClean 23:59:59'";
+}
+
+// 3. NUEVO: Filtro por nombre de empleado (solo si viene en la URL y es admin)
+if (!empty($empleadoFiltro) && $esAdmin) {
+    $empleadoClean = mysqli_real_escape_string($conexion, $empleadoFiltro);
+    $condiciones[] = "u.nombre = '$empleadoClean'";
 }
 
 if (count($condiciones) > 0) {

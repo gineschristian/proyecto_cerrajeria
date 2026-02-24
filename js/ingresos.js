@@ -1,67 +1,86 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const formEditarIngreso = document.getElementById('formEditarIngreso');
-
-    // 1. MANEJAR EL ENVÍO DEL FORMULARIO DE EDICIÓN
-    if (formEditarIngreso) {
-        formEditarIngreso.addEventListener('submit', function(e) {
+    console.log("JS Cargado correctamente"); // Verás esto en la consola al refrescar
+    
+    const formEditar = document.getElementById('formEditarIngreso');
+    if (formEditar) {
+        formEditar.addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const datos = new FormData(this);
-
-            fetch('../php/actualizar_ingreso.php', {
-                method: 'POST',
-                body: datos
-            })
+            fetch('../php/actualizar_ingreso.php', { method: 'POST', body: datos })
             .then(res => res.text())
             .then(mensaje => {
                 alert(mensaje);
-                if (mensaje.includes("✅")) {
-                    cerrarModal('modalEditarIngreso');
-                    // Recargamos la tabla para ver los cambios y los totales actualizados
-                    filtrarIngresos(); 
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('No se pudo actualizar el ingreso.');
+                if (mensaje.includes("✅")) { cerrarModal('modalEditarIngreso'); filtrarIngresos(); }
             });
         });
     }
+    // Calcular al cargar
+    setTimeout(actualizarSumaIngresosFiltrados, 800);
 });
 
-// --- FUNCIONES GLOBALES ---
-
-// 2. FUNCIÓN PARA ABRIR EL MODAL Y RELLENAR DATOS
-function abrirEditarIngreso(ingreso) {
-    // Rellenamos los campos del modal con los datos que vienen de la base de datos
-    document.getElementById('edit_ingreso_id').value = ingreso.id;
-    document.getElementById('edit_ingreso_concepto').value = ingreso.concepto;
-    document.getElementById('edit_ingreso_monto').value = ingreso.monto;
-    
-    // Si usas una sola tabla para A y B, aquí podrías identificar de cuál viene
-    if(document.getElementById('edit_ingreso_tabla')) {
-        document.getElementById('edit_ingreso_tabla').value = ingreso.tipo || ''; 
-    }
-
-    // Mostramos la pantalla emergente
-    document.getElementById('modalEditarIngreso').style.display = 'flex';
-}
-
-// 3. FUNCIÓN PARA CERRAR EL MODAL
-function cerrarModal(idModal) {
-    document.getElementById(idModal).style.display = 'none';
-}
-
-// 4. FUNCIÓN PARA FILTRAR POR FECHAS (AJAX)
 function filtrarIngresos() {
     const inicio = document.getElementById('fechaInicio').value;
     const fin = document.getElementById('fechaFin').value;
 
-    // Llamamos al PHP pasándole las fechas por la URL
+    console.log("Filtrando desde:", inicio, "hasta:", fin);
+
     fetch(`../php/obtener_ingresos_totales.php?inicio=${inicio}&fin=${fin}`)
         .then(res => res.text())
         .then(html => {
             document.getElementById('cuerpoTablaIngresos').innerHTML = html;
+            // Damos tiempo a la tabla para que aparezca
+            setTimeout(actualizarSumaIngresosFiltrados, 300);
         })
-        .catch(error => console.error('Error al filtrar:', error));
+        .catch(error => console.error('Error AJAX:', error));
+}
+
+function limpiarFiltroIngresos() {
+    document.getElementById('fechaInicio').value = "";
+    document.getElementById('fechaFin').value = "";
+    filtrarIngresos();
+}
+
+function actualizarSumaIngresosFiltrados() {
+    let sumaA = 0; 
+    let sumaB = 0; 
+
+    const filas = document.querySelectorAll('#cuerpoTablaIngresos tr');
+    
+    filas.forEach((fila) => {
+        if (fila.cells.length >= 4) {
+            let tipo = fila.cells[2].innerText.toUpperCase().replace('TIPO', '').trim();
+            let textoMonto = fila.cells[3].innerText.replace('MONTO', '').replace('€', '').trim();
+
+            // Limpieza inteligente de moneda europea
+            // Si tiene punto y coma (1.234,56), quitamos el punto y cambiamos coma por punto
+            if (textoMonto.includes(',') && textoMonto.includes('.')) {
+                textoMonto = textoMonto.replace(/\./g, '');
+                textoMonto = textoMonto.replace(',', '.');
+            } 
+            // Si solo tiene coma (1234,56), la cambiamos por punto
+            else if (textoMonto.includes(',')) {
+                textoMonto = textoMonto.replace(',', '.');
+            }
+
+            let valor = parseFloat(textoMonto);
+
+            if (!isNaN(valor)) {
+                if (tipo.includes("OFICIAL") || tipo.includes("A") || tipo.includes("FACTURA")) {
+                    sumaA += valor;
+                } else {
+                    sumaB += valor;
+                }
+            }
+        }
+    });
+
+    // ESTO ES LO QUE ACTUALIZA LOS CUADROS
+    // Asegúrate de que estos IDs existan en tu ingresos.php
+    const domA = document.getElementById('totalOficial');
+    const domB = document.getElementById('totalB');
+    const domGen = document.getElementById('totalGeneral');
+
+    if (domA) domA.innerText = sumaA.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
+    if (domB) domB.innerText = sumaB.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
+    if (domGen) domGen.innerText = (sumaA + sumaB).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
 }

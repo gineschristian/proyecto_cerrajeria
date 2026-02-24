@@ -82,24 +82,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /**
  * Filtro en tiempo real por Localidad
- * Filtra las filas existentes y actualiza el visor dinámico (Dinero + Cantidad)
  */
 function filtrarLocalidad() {
     const input = document.getElementById('busquedaLocalidad').value.toLowerCase();
     const filas = document.getElementById('cuerpoTablaTrabajos').getElementsByTagName('tr');
     const visorInfo = document.getElementById('info-filtro');
     const resumenFiltro = document.getElementById('resumenFiltro');
-    const totalFacturadoPrincipal = document.getElementById('totalFacturado'); // El total de la parte inferior/superior
+    const totalFacturadoPrincipal = document.getElementById('totalFacturado'); 
     
     let sumaVisible = 0;
     let contador = 0;
 
     for (let i = 0; i < filas.length; i++) {
-        // Ignorar filas de "No hay registros"
         if (filas[i].cells.length < 4) continue;
 
         const celdaInfo = filas[i].querySelector('.col-info'); 
-        const celdaPrecio = filas[i].querySelector('.col-total'); // Cambiado de .precio-fila a .col-total
+        const celdaPrecio = filas[i].querySelector('.col-total');
 
         if (celdaInfo) {
             const texto = celdaInfo.textContent || celdaInfo.innerText;
@@ -107,9 +105,7 @@ function filtrarLocalidad() {
                 filas[i].style.display = "";
                 contador++;
                 
-                // Sumar al total si la fila es visible
                 if (celdaPrecio) {
-                    // Limpiamos el formato: quitamos el símbolo €, quitamos puntos de mil y cambiamos coma por punto
                     let precioTexto = celdaPrecio.innerText.replace('€', '').trim();
                     let precioNum = parseFloat(precioTexto.replace(/\./g, '').replace(',', '.'));
                     
@@ -123,13 +119,11 @@ function filtrarLocalidad() {
         }
     }
 
-    // Formatear la suma para mostrarla como moneda europea
     const sumaFormateada = sumaVisible.toLocaleString('es-ES', { 
         minimumFractionDigits: 2, 
         maximumFractionDigits: 2 
     }) + '€';
 
-    // 1. Actualizar el visor dinámico (el cuadro azul de búsqueda)
     if (input.length > 0) {
         if (visorInfo) visorInfo.style.display = "block";
         if (resumenFiltro) {
@@ -139,7 +133,6 @@ function filtrarLocalidad() {
         if (visorInfo) visorInfo.style.display = "none";
     }
 
-    // 2. Sincronizar con el total principal de la página para que no haya confusión
     if (totalFacturadoPrincipal) {
         totalFacturadoPrincipal.innerText = sumaFormateada;
     }
@@ -153,7 +146,7 @@ function abrirEditarTrabajo(trabajo) {
             'edit_trabajo_nombre_cliente': trabajo.nombre_cliente,
             'edit_trabajo_telefono': trabajo.telefono,
             'edit_trabajo_localidad': trabajo.localidad,
-            'edit_trabajo_description': trabajo.descripcion, // Corregido de edit_trabajo_desc a edit_trabajo_description según tu HTML
+            'edit_trabajo_description': trabajo.descripcion,
             'edit_trabajo_precio': trabajo.precio_total
         };
 
@@ -191,28 +184,30 @@ function eliminarTrabajo(id) {
     .catch(error => console.error('Error:', error));
 }
 
+// --- FUNCIÓN MODIFICADA PARA FILTRAR POR EMPLEADO ---
 function filtrarTrabajos() {
     const inicio = document.getElementById('fechaInicio')?.value || '';
     const fin = document.getElementById('fechaFin')?.value || '';
+    // Capturamos el nuevo filtro de empleado
+    const empleado = document.getElementById('filtroEmpleado')?.value || '';
+    
     const tabla = document.getElementById('cuerpoTablaTrabajos');
     
     if (tabla) { tabla.style.opacity = '0.5'; }
 
-    fetch(`../php/obtener_trabajos.php?inicio=${inicio}&fin=${fin}`)
+    // Añadimos el parámetro 'empleado' a la URL
+    fetch(`../php/obtener_trabajos.php?inicio=${inicio}&fin=${fin}&empleado=${encodeURIComponent(empleado)}`)
     .then(res => res.text())
     .then(html => {
         if (tabla) { 
-            // El script dentro de 'html' actualizará el totalFacturado inicial
             tabla.innerHTML = html; 
             tabla.style.opacity = '1';
 
-            // Ejecutar cualquier <script> que venga en el HTML (como el que actualiza el total)
             const scripts = tabla.getElementsByTagName('script');
             for (let n = 0; n < scripts.length; n++) {
                 eval(scripts[n].innerHTML);
             }
 
-            // Si el buscador de localidad tiene texto, reaplicamos el filtro y la suma
             if (document.getElementById('busquedaLocalidad')?.value !== "") {
                 filtrarLocalidad();
             }
@@ -229,16 +224,22 @@ function cerrarModal(id) {
     if (modal) { modal.style.display = 'none'; }
 }
 
+// --- FUNCIÓN ACTUALIZADA ---
 function limpiarTodosLosFiltros() {
     const inputLoc = document.getElementById('busquedaLocalidad');
     const inputIni = document.getElementById('fechaInicio');
     const inputFin = document.getElementById('fechaFin');
+    const inputEmp = document.getElementById('filtroEmpleado'); // Añadido selector empleado
     const visorInfo = document.getElementById('info-filtro');
 
     if (inputLoc) inputLoc.value = '';
     if (inputIni) inputIni.value = '';
     if (inputFin) inputFin.value = '';
+    if (inputEmp) inputEmp.value = ''; // Limpiamos el selector
     if (visorInfo) visorInfo.style.display = 'none';
 
     filtrarTrabajos(); 
 }
+
+// Nota: Asegúrate de que el botón de "Reset" en tu HTML llame a limpiarTodosLosFiltros()
+// o renombra la función en el HTML a limpiarFiltros() si así lo prefieres.

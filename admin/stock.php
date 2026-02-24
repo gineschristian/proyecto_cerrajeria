@@ -49,7 +49,7 @@ while($u = mysqli_fetch_assoc($res_u)) {
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Stock - Cerrajería Pinos</h1>
+            <h1>Stock</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -62,6 +62,7 @@ while($u = mysqli_fetch_assoc($res_u)) {
                 <a href="impuestos.php" class="btn-header">📊 Impuestos</a>
                 <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
                 <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+                <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
             <?php endif; ?>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>

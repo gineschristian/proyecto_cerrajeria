@@ -13,11 +13,12 @@ if (mysqli_num_rows($res) > 0) {
         // Icono y etiqueta para la factura
         $iconFactura = ($row['con_factura'] == 1) ? "✅ Sí" : "❌ No";
         
-        // Preparamos los datos para el modal de edición
+        // Preparamos los datos para el modal de edición (Incluye automáticamente el campo 'proveedor')
         $datosGasto = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
 
         $html .= "<tr>
                     <td data-label='Fecha'>".date('d/m/Y', strtotime($row['fecha']))."</td>
+                    <td data-label='Proveedor' style='font-weight: bold; color: #2c3e50;'>".htmlspecialchars($row['proveedor'] ?? 'Otros')."</td>
                     <td data-label='Concepto'>".htmlspecialchars($row['concepto'])."</td>
                     <td data-label='Categoría'><span class='badge-cat'>".htmlspecialchars($row['categoria'])."</span></td>
                     <td data-label='Factura' style='text-align:center;'>{$iconFactura}</td>
@@ -31,7 +32,8 @@ if (mysqli_num_rows($res) > 0) {
                   </tr>";
     }
 } else {
-    $html = "<tr><td colspan='6' style='text-align:center; padding:20px;'>No hay gastos registrados.</td></tr>";
+    // Aumentamos el colspan a 7 porque ahora hay una columna más
+    $html = "<tr><td colspan='7' style='text-align:center; padding:20px;'>No hay gastos registrados.</td></tr>";
 }
 
 echo $html;

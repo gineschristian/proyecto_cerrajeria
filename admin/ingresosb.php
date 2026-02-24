@@ -51,16 +51,97 @@ include '../php/conexion.php';
                 padding: 8px 12px;
             }
         }
+        @media print {
+    /* 1. Ocultar todo lo que no sea información */
+    header, 
+    .nav-container, 
+    .columna-formulario, 
+    .filtros-container, 
+    .btn-header, 
+    .btn-editar, 
+    .btn-eliminar, 
+    button {
+        display: none !important;
+    }
+
+    /* 2. Ajustar el contenedor principal */
+    body {
+        background: white !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .trabajos-container-dual {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .columna-tabla {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 3. Estilo del título y totales */
+    .header-tabla-dinamica {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-bottom: 2px solid #e67e22 !important;
+        margin-bottom: 20px !important;
+        padding-bottom: 10px !important;
+    }
+
+    .contador-total {
+        background: #f8f9fa !important;
+        border: 1px solid #ddd !important;
+        padding: 10px 20px !important;
+    }
+
+    .cifra {
+        color: black !important;
+        font-weight: bold !important;
+    }
+
+    /* 4. Ajustar la tabla para que ocupe todo el ancho */
+    .table-card {
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    th, td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+        text-align: left !important;
+        font-size: 10pt !important;
+    }
+
+    th {
+        background-color: #f2f2f2 !important;
+        color: black !important;
+    }
+
+    /* Forzar que el color de fondo se imprima en algunos navegadores */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo" class="logo-img">
-            <h1>Control de Extras - Cerrajeria Pinos</h1>
+            <h1>Control de Extras</h1>
         </div>
         <nav class="nav-container">
-            <a href="dashboard.php" class="btn-header" > 🏠 Panel de Control</a>
+            <a href="dashboard.php" class="btn-header" > 🏠 Panel</a>
         <a href="stock.php" class="btn-header" > 📦 Stock</a>
         <a href="impuestos.php" class="btn-header" >📊 Impuestos</a>
         <a href="gestion_usuarios.php" class="btn-header">👥 Empleados </a>
@@ -69,6 +150,7 @@ include '../php/conexion.php';
         <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
         <a href="gastos.php" class="btn-header" > 💸 Gastos</a>
         <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+        <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>
@@ -97,14 +179,22 @@ include '../php/conexion.php';
         </aside>
 
         <section class="columna-tabla">
-            <div class="table-card">
-                <div class="header-tabla-dinamica">
-                    <h2>Listado de Dinero Extra</h2>
-                    <div class="contador-total" style="background: #e67e22;">
-                        <span class="etiqueta">Acumulado B:</span>
-                        <span class="cifra" id="totalExtras" style="color: black;">0.00€</span>
-                    </div>
-                </div>
+    <div class="filtros-container" style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <input type="date" id="fechaInicioB" class="input-style-mini" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="date" id="fechaFinB" class="input-style-mini" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        <button onclick="filtrarExtras()" class="btn-filtro" style="padding: 8px 15px; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer;">Filtrar</button>
+        <button onclick="limpiarFiltroExtras()" class="btn-reset" style="padding: 8px 15px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">Reset</button>
+        <button onclick="window.print()" class="btn-pdf" style="padding: 8px 15px; background: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer;">📄 PDF</button>
+    </div>
+
+    <div class="table-card">
+        <div class="header-tabla-dinamica">
+            <h2>Listado de Dinero Extra</h2>
+            <div class="contador-total" style="background: #e67e22;">
+                <span class="etiqueta">Acumulado B:</span>
+                <span class="cifra" id="totalExtras" style="color: black;">0.00€</span>
+            </div>
+        </div>
 
                 <div class="tabla-scroll-vertical">
                     <table>

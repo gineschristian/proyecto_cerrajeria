@@ -25,12 +25,47 @@ if (empty($nombre_emp)) {
     <title>Historial - <?php echo htmlspecialchars($nombre_emp); ?></title>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
+<style>
+    .btn-volver {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .btn-pdf {
+    background-color: #e74c3c; /* Rojo elegante */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.3s;
+}
+
+.btn-pdf:hover {
+    background-color: #c0392b;
+}
+
+/* Regla de oro: No imprimir el botón en el propio PDF */
+@media print {
+    .btn-pdf, .btn-volver, header nav, .nav-container {
+        display: none !important;
+    }
+}
+</style>
 </head>
 <body>
     <header>
         <div class="header-content">
             <h1>📂 Historial: <?php echo htmlspecialchars($nombre_emp); ?></h1>
-            <a href="../admin/empresas.php" class="btn-header">⬅️ Volver</a>
+            <button onclick="window.print()" class="btn-pdf">📄 Generar PDF / Imprimir</button>
+            <a href="../admin/empresas.php" class="btn-volver">⬅️ Volver</a>
         </div>
     </header>
 

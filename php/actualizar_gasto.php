@@ -1,25 +1,40 @@
 <?php
 include 'conexion.php';
 
-$concepto = $_POST['concepto'] ?? '';
-$monto = (float)($_POST['monto'] ?? 0);
-$fecha = $_POST['fecha'] ?? date('Y-m-d');
-$factura = (int)($_POST['factura'] ?? 0); // Capturamos el nuevo campo
+// Recogemos los datos del formulario de edición
+$id          = $_POST['id'] ?? '';
+$proveedor   = $_POST['proveedor'] ?? 'Otros';
+$concepto    = $_POST['concepto'] ?? '';
+$categoria   = $_POST['categoria'] ?? '';
+$monto       = (float)($_POST['monto'] ?? 0);
+$con_factura = (int)($_POST['con_factura'] ?? 0);
 
-if (!empty($concepto) && $monto > 0) {
-    // Añadimos 'factura' a la consulta SQL
-    $sql = "INSERT INTO gastos (fecha, concepto, monto, factura) VALUES (?, ?, ?, ?)";
+if (!empty($id) && !empty($concepto) && $monto > 0) {
+    
+    // Usamos UPDATE en lugar de INSERT para modificar el registro existente
+    $sql = "UPDATE gastos SET 
+                proveedor = ?, 
+                concepto = ?, 
+                categoria = ?, 
+                monto = ?, 
+                con_factura = ? 
+            WHERE id = ?";
+            
     $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("ssdi", $fecha, $concepto, $monto, $factura);
+    
+    // "sssdii" -> s (proveedor), s (concepto), s (categoria), d (monto), i (factura), i (id)
+    $stmt->bind_param("sssdii", $proveedor, $concepto, $categoria, $monto, $con_factura, $id);
 
     if ($stmt->execute()) {
-        echo "✅ Gasto registrado correctamente.";
+        echo "✅ Gasto actualizado correctamente.";
     } else {
-        echo "❌ Error al guardar: " . $conexion->error;
+        echo "❌ Error al actualizar: " . $conexion->error;
     }
+    
     $stmt->close();
 } else {
-    echo "❌ Rellena todos los campos.";
+    echo "❌ Faltan datos necesarios para la actualización.";
 }
+
 $conexion->close();
 ?>

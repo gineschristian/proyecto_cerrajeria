@@ -5,21 +5,18 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // 1. Verificamos si existe la sesión
 if (!isset($_SESSION['usuario_id'])) {
-    // CORRECCIÓN: Apuntamos al index.html en la raíz
     header("Location: ../index.html");
     exit();
 }
 
-// 2. Verificamos el rol (usando trim por seguridad de la BD)
+// 2. Verificamos el rol
 $rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
 
 if ($rol !== 'admin') {
-    // Si es empleado, lo devolvemos al dashboard con un mensaje
     header("Location: dashboard.php?error=acceso_denegado");
     exit();
 }
 
-// Si llega aquí, es Admin y puede ver el contenido
 include '../php/conexion.php'; 
 ?>
 <!DOCTYPE html>
@@ -34,49 +31,79 @@ include '../php/conexion.php';
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css"> 
     <style>
-        /* Ajuste específico para las tarjetas de resumen en móvil */
+        /* Ajustes Web */
         @media (max-width: 768px) {
-            .tarjetas-resumen {
-                flex-direction: column !important;
+            .tarjetas-resumen { flex-direction: column !important; }
+            .header-tabla-dinamica { flex-direction: column; gap: 15px; }
+            .filtros-fecha { width: 100%; display: flex; flex-wrap: wrap; gap: 5px; }
+            .filtros-fecha input { flex: 1; }
+        }
+        .nav-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .print-only { display: none; }
+
+        /* --- CONFIGURACIÓN DE IMPRESIÓN CORREGIDA --- */
+        @media print {
+            header, nav, .nav-container, .btn-pdf, .btn-filtro, .btn-cancelar, .btn-reset, 
+            #modalEditarIngreso, td:last-child, th:last-child, .header-tabla-dinamica {
+                display: none !important;
             }
-            .header-tabla-dinamica {
-                flex-direction: column;
-                gap: 15px;
+            
+            .print-only { 
+                display: block !important; 
+                text-align: center; 
+                margin-bottom: 20px; 
+                border-bottom: 2px solid #000;
+                padding-bottom: 10px;
             }
-            .filtros-fecha {
-                width: 100%;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 5px;
+
+            body { background: white !important; padding: 0; color: black; font-family: Arial, sans-serif; }
+            
+            .tabla-scroll-vertical { 
+                overflow: visible !important; 
+                height: auto !important; 
+                max-height: none !important; 
+                display: block !important;
             }
-            .filtros-fecha input {
+
+            .tarjetas-resumen { 
+                display: flex !important; 
+                flex-direction: row !important;
+                justify-content: center !important;
+                gap: 0 !important; 
+                margin: 0 auto 25px auto !important;
+                width: 70% !important; 
+            }
+            .card { 
                 flex: 1;
+                border: 1px solid #000 !important;
+                box-shadow: none !important; 
+                border-radius: 0 !important;
+                padding: 10px !important;
+                background: white !important;
+                text-align: center;
             }
-        }
-        .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                padding: 15px;
-            }
-            .btn-header {
-                font-size: 0.8rem;
-                padding: 8px 12px;
-            }
+            .card h3 { font-size: 8pt !important; margin: 0; text-transform: uppercase; }
+            .card p { font-size: 14pt !important; font-weight: bold !important; margin: 2px 0 !important; }
+            .card small { font-size: 7pt !important; }
+
+            .table-card { box-shadow: none; border: none; width: 100% !important; }
+            .user-table { width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; }
+            .user-table th { background: #eee !important; border: 1px solid #000 !important; font-size: 9pt; }
+            .user-table td { border: 1px solid #000 !important; font-size: 9pt; padding: 6px !important; }
         }
     </style>
 </head>
 <body>
+    <div class="print-only">
+        <h1 style="margin:0;">CERRAJERÍA PINOS</h1>
+        <p style="margin:5px 0;">Libro de Ingresos | Emisión: <?php echo date('d/m/Y'); ?></p>
+    </div>
+
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Ingresos - Cerrajeria Pinos</h1>
+            <h1>Ingresos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -88,12 +115,13 @@ include '../php/conexion.php';
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+            <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>
 
     <main class="trabajos-layout" style="padding: 10px;"> 
-        <div class="tarjetas-resumen" style="width: 100%; display: flex; gap: 20px;">
+        <div class="tarjetas-resumen">
             <div class="card oficial">
                 <h3>Facturación (A)</h3>
                 <p id="totalOficial">0.00€</p>
@@ -114,15 +142,18 @@ include '../php/conexion.php';
         <section class="table-card" style="width: 100%; margin-top: 20px; padding: 15px;">
             <div class="header-tabla-dinamica" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="border:none; margin:0;">Libro de Ingresos</h2>
-                <div class="filtros-fecha">
+                <div class="filtros-fecha" style="display:flex; gap:8px;">
                     <input type="date" id="fechaInicio" class="input-style-mini">
                     <input type="date" id="fechaFin" class="input-style-mini">
                     <button onclick="filtrarIngresos()" class="btn-filtro" style="padding: 8px 15px; background: var(--rojo-principal); color: white; border: none; border-radius: 5px; cursor: pointer;">Filtrar</button>
+                    <button onclick="limpiarFiltroIngresos()" class="btn-reset" style="padding: 8px 15px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">Reset</button>
+                    <button onclick="window.print()" class="btn-pdf">📄 PDF</button>
                 </div>
             </div>
 
             <div class="tabla-scroll-vertical">
-                <table class="user-table"> <thead>
+                <table class="user-table" id="tablaIngresos"> 
+                    <thead>
                         <tr>
                             <th>Fecha</th>
                             <th>Concepto</th>
@@ -145,20 +176,17 @@ include '../php/conexion.php';
             <form id="formEditarIngreso" class="mi-formulario">
                 <input type="hidden" name="id" id="edit_ingreso_id">
                 <input type="hidden" name="tabla" id="edit_ingreso_tabla">
-                
                 <div class="input-group">
                     <label>Concepto / Cliente</label>
                     <input type="text" name="concepto" id="edit_ingreso_concepto" required>
                 </div>
-                
                 <div class="input-group">
                     <label>Monto (€)</label>
                     <input type="number" name="monto" id="edit_ingreso_monto" step="0.01" required>
                 </div>
-
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button type="submit" class="btn-guardar" style="background: #27ae60; flex: 1;">Actualizar</button>
-                    <button type="button" onclick="cerrarModal('modalEditarIngreso')" class="btn-cancelar" style="background: #95a5a6; flex: 1; border: none; color: white; border-radius: 5px; cursor: pointer;">Cancelar</button>
+                    <button type="button" onclick="cerrarModal('modalEditarIngreso')" class="btn-cancelar" style="background: #95a5a6; flex: 1;">Cancelar</button>
                 </div>
             </form>
         </div>

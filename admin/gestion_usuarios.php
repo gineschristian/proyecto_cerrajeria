@@ -60,7 +60,7 @@ include '../php/conexion.php';
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajería Pinos" class="logo-img">
-            <h1>Gestión de Personal - Cerajeria Pinos</h1>
+            <h1>Gestión de Personal</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -72,6 +72,7 @@ include '../php/conexion.php';
             <a href="stock.php" class="btn-header">📦 Stock</a>
             <a href="plantillas.php"class="btn-header">🗒️ Plantillas</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+            <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>

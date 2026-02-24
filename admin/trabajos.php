@@ -29,11 +29,10 @@ include '../php/conexion.php';
         .columna-formulario { flex: 1; min-width: 380px; max-width: 420px; }
         .columna-tabla { flex: 2.5; min-width: 600px; }
         
-        /* --- DISEÑO DE TABLA MEJORADO --- */
+        /* --- DISEÑO DE TABLA PANTALLA --- */
         .table-card table { 
             width: 100%; 
             border-collapse: collapse; 
-            table-layout: auto; /* Permite que las columnas respiren según contenido */
         }
         
         .table-card th, .table-card td { 
@@ -43,15 +42,23 @@ include '../php/conexion.php';
             text-align: left; 
         }
 
-        /* Colores y efectos */
         .table-card tr:hover { background-color: #f8fbff; }
         
-        /* Anchos específicos para evitar solapamiento */
         .col-fecha { width: 75px; }
         .col-info { min-width: 250px; }
-        <?php if ($esAdmin): ?>
-        .col-operario { width: 130px; text-align: center; }
-        <?php endif; ?>
+        
+        /* ESTILO OPERARIO EN PANTALLA (Con diseño) */
+        .col-operario div {
+            background: #e8f4fd; 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            display: inline-block; 
+            font-weight: 600; 
+            color: #2980b9; 
+            font-size: 0.8rem; 
+            border: 1px solid #d1e9f9;
+        }
+
         .col-factura { width: 85px; text-align: center; }
         .col-total { width: 110px; text-align: right; white-space: nowrap; }
         .col-accion { width: 120px; text-align: center; }
@@ -64,17 +71,71 @@ include '../php/conexion.php';
             background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; width: 100%;
         }
 
-        .fila-material-controles { display: flex; gap: 8px; align-items: center; width: 100%; box-sizing: border-box; }
-        .input-buscador-material { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-
         .buscador-localidad-container { background: #fff; padding: 15px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #3498db; }
         .input-busqueda { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
         
-        .btn-accion { padding: 8px; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-accion:hover { transform: scale(1.1); }
-
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background-color: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+
+        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
+        @media print {
+            header, .nav-container, .columna-formulario, .buscador-localidad-container, 
+            .header-tabla-dinamica, .col-accion, button, .btn-header, .logo-img {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 10px !important;
+                width: 100% !important;
+            }
+
+            .trabajos-container-dual { display: block !important; width: 100% !important; margin: 0 !important; }
+            .columna-tabla { width: 100% !important; max-width: 100% !important; margin: 0 !important; }
+
+            .columna-tabla::before {
+                content: "INFORME DE TRABAJOS REALIZADOS";
+                display: block;
+                text-align: center;
+                font-size: 16pt;
+                font-weight: bold;
+                margin-bottom: 15px;
+                border-bottom: 2px solid #000;
+                padding-bottom: 5px;
+            }
+
+            table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+            th, td { border: 1px solid #333 !important; padding: 6px !important; font-size: 8.5pt !important; word-wrap: break-word !important; color: #000 !important; }
+            th { background-color: #f2f2f2 !important; }
+
+            /* ANULAR DISEÑO DE OPERARIO EN IMPRESIÓN */
+            .col-operario div {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                color: #000 !important;
+                font-size: 8.5pt !important;
+                display: block !important;
+                font-weight: normal !important;
+            }
+
+            .col-fecha { width: 10% !important; }
+            .col-info { width: 50% !important; }
+            .col-operario { width: 15% !important; }
+            .col-factura { width: 10% !important; }
+            .col-total { width: 15% !important; text-align: right !important; }
+
+            #totalFacturado {
+                display: block !important;
+                font-size: 14pt !important;
+                font-weight: bold !important;
+                text-align: right !important;
+                margin-top: 15px;
+            }
+            
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -113,7 +174,7 @@ include '../php/conexion.php';
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Trabajos - Cerrajería Pinos</h1>
+            <h1>Trabajos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -141,19 +202,17 @@ include '../php/conexion.php';
                         <div class="input-group"><label>Localidad <strong>*</strong></label><input type="text" name="localidad" placeholder="Ej: Lorca" required></div>
                     </div>
                     <div class="input-group">
-                    <label>Empresa / Cliente</label>
+                        <label>Empresa / Cliente</label>
                         <select name="nombre_cliente" id="nombre_cliente" class="input-style">
                             <option value="">-- Cliente Particular --</option>
                             <?php
-        // Traemos las empresas que el cliente ha creado en su módulo
-        $res_emp = mysqli_query($conexion, "SELECT nombre FROM empresas ORDER BY nombre ASC");
-        while($e = mysqli_fetch_assoc($res_emp)) {
-            echo "<option value='".htmlspecialchars($e['nombre'])."'>".htmlspecialchars($e['nombre'])."</option>";
-        }
-        ?>
-    </select>
-    <small>Si es un particular, déjalo en blanco y usa el campo 'Dirección'.</small>
-</div>
+                            $res_emp = mysqli_query($conexion, "SELECT nombre FROM empresas ORDER BY nombre ASC");
+                            while($e = mysqli_fetch_assoc($res_emp)) {
+                                echo "<option value='".htmlspecialchars($e['nombre'])."'>".htmlspecialchars($e['nombre'])."</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
                     <div class="input-group"><label>Dirección <strong>*</strong></label><input type="text" name="cliente" placeholder="Calle, número, piso..." required></div>
                     <div class="input-group"><label>Descripción</label><textarea name="description" placeholder="¿Qué se ha hecho?" rows="2"></textarea></div>
                     <div class="zona-material">
@@ -184,10 +243,27 @@ include '../php/conexion.php';
                 </div>
 
                 <div class="header-tabla-dinamica" style="padding: 10px; background: #f8f9fa; border-bottom: 1px solid #eee;">
-                    <div style="display: flex; gap: 8px;">
-                        <input type="date" id="fechaInicio" class="input-style-mini" style="flex:1;">
-                        <input type="date" id="fechaFin" class="input-style-mini" style="flex:1;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="date" id="fechaInicio" class="input-style-mini" style="flex:1; min-width: 120px;">
+                        <input type="date" id="fechaFin" class="input-style-mini" style="flex:1; min-width: 120px;">
+                        
+                        <?php if ($esAdmin): ?>
+                            <select id="filtroEmpleado" class="input-style-mini" style="flex:1; min-width: 150px; padding: 5px;">
+                                <option value="">-- Todos los Empleados --</option>
+                                <?php
+                                $res_emp_filtro = mysqli_query($conexion, "SELECT nombre FROM usuarios WHERE rol = 'empleado' ORDER BY nombre ASC");
+                                while($emp = mysqli_fetch_assoc($res_emp_filtro)) {
+                                    echo "<option value='".htmlspecialchars($emp['nombre'])."'>".htmlspecialchars($emp['nombre'])."</option>";
+                                }
+                                ?>
+                            </select>
+                        <?php else: ?>
+                            <input type="hidden" id="filtroEmpleado" value="">
+                        <?php endif; ?>
+
                         <button type="button" onclick="filtrarTrabajos()" class="btn-lupa" style="padding: 5px 15px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">Filtrar</button>
+                        <button type="button" onclick="limpiarTodosLosFiltros()" class="btn-reset" style="padding: 5px 10px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer;">Limpiar</button>
+                        <button type="button" onclick="window.print()" class="btn-print" style="padding: 5px 15px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📄 Imprimir PDF</button>
                     </div>
                 </div>
 

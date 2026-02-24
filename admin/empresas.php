@@ -65,18 +65,19 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo" class="logo-img">
-            <h1>Empresas - Cerrajeria Pinos</h1>
+            <h1>Empresas</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="impuestos.php" class="btn-header">📊 Impuestos</a>
             <a href="gestion_usuarios.php" class="btn-header">👥 Empleados</a>
             <a href="stock.php" class="btn-header">📦 Stock</a>
+            <a href="gastos.php" class="btn-header">💸 Gastos </a>
             <a href="ingresos.php" class="btn-header">💰 Ingresos</a>
             <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
-            <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+            <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>

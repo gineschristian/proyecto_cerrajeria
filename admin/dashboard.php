@@ -196,7 +196,14 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
                     Gestionar
                 </a>
             </div>
-
+            <div class="card" style="border-top: 5px solid #c8f573;">
+                <div class="card-icon" style="font-size: 2.5rem; margin-bottom: 10px;">🚚</div>
+                <h3>Proveedores</h3>
+                <p>Proveedores de materiales</p>
+                <a href="proveedores.php" class="btn-acceder" style="background: #34495e; color: white;">
+                    Gestionar
+                </a>
+            </div>
         <?php endif; ?>
 
     </main>
