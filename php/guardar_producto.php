@@ -2,8 +2,8 @@
 include 'conexion.php';
 
 $nombre = $_POST['nombre'];
-$cantidad = $_POST['cantidad'];
-$categoria = $_POST['categoria']; // Capturamos la categoría
+$cantidad_inicial = $_POST['cantidad']; // Esta será la cantidad que va al almacén
+$categoria = $_POST['categoria']; 
 $nombre_imagen = "default.jpg"; 
 
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === 0) {
@@ -15,16 +15,17 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === 0) {
     move_uploaded_file($_FILES['imagen']['tmp_name'], $directorio . $nombre_imagen);
 }
 
-// Preparamos la consulta con los 4 campos
-$sql = "INSERT INTO productos (nombre, categoria, cantidad, imagen) VALUES (?, ?, ?, ?)";
+// Modificamos la consulta para apuntar a cant_almacen 
+// cant_jefe y cant_empleado se quedan en 0 por defecto según la estructura de la tabla
+$sql = "INSERT INTO productos (nombre, categoria, cant_almacen, cant_jefe, cant_empleado, imagen) VALUES (?, ?, ?, 0, 0, ?)";
 $stmt = $conexion->prepare($sql);
 
 if ($stmt) {
-    // "ssis" significa: string, string, integer, string
-    $stmt->bind_param("ssis", $nombre, $categoria, $cantidad, $nombre_imagen);
+    // "ssis" -> nombre(s), categoria(s), cant_almacen(i), imagen(s)
+    $stmt->bind_param("ssis", $nombre, $categoria, $cantidad_inicial, $nombre_imagen);
     
     if ($stmt->execute()) {
-        echo "✅ Producto guardado correctamente";
+        echo "✅ Producto guardado correctamente en el Taller";
     } else {
         echo "❌ Error al ejecutar: " . $stmt->error;
     }

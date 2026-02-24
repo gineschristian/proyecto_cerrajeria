@@ -87,6 +87,7 @@ include '../php/conexion.php';
             <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
+            <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>

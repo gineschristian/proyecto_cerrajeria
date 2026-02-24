@@ -3,16 +3,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. Verificamos que esté logueado
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../index.html");
     exit();
 }
 
-// 2. DEFINIMOS LA VARIABLE QUE FALTA (Soluciona el error de la imagen)
 $esAdmin = (isset($_SESSION['rol']) && strtolower(trim($_SESSION['rol'])) === 'admin');
-
-// 3. Incluimos la conexión con la ruta correcta (subiendo un nivel)
+$id_usuario_actual = $_SESSION['usuario_id'];
 include '../php/conexion.php'; 
 ?>
 <!DOCTYPE html>
@@ -28,167 +25,184 @@ include '../php/conexion.php';
     <link rel="stylesheet" href="../css/trabajos_layout.css?v=1.2">
     <style>
         header { background-color: #2c3e50 !important; }
-        .trabajos-container-dual { display: flex; flex-wrap: wrap; gap: 20px; padding: 15px; }
-        .columna-formulario, .columna-tabla { flex: 1; min-width: 320px; }
-
-        .zona-material {
-    background: #ebf2f7;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    border: 1px dashed #3498db;
-    width: 100%; /* Evita que se salga del padre */
-    box-sizing: border-box;
-}
-
-/* Ajuste de cada fila para que no se desborde */
-.fila-material {
-    display: flex;
-    flex-wrap: nowrap; /* Mantiene todo en una línea en PC */
-    gap: 8px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-/* El selector de producto debe ser el que más espacio ocupe */
-.fila-material select {
-    flex: 2; 
-    min-width: 0; /* Truco de flexbox para que no ignore el ancho del padre */
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
-
-/* El input de cantidad debe ser pequeño pero fijo */
-.fila-material input[type="number"] {
-    flex: 0 0 60px; /* No crece, no encoge, base de 60px */
-    width: 60px;
-    padding: 8px;
-    text-align: center;
-}
-
-/* Ajustes para móviles */
-@media (max-width: 480px) {
-    .fila-material {
-        flex-wrap: wrap; /* En móviles muy pequeños, permite dos líneas si es necesario */
-    }
-    .fila-material select {
-        flex: 1 1 100%; /* El select ocupa toda la línea arriba */
-    }
-    .fila-material input[type="number"] {
-        flex: 1; /* La cantidad y el botón X se reparten la línea de abajo */
-    }
-}
-
-        @media (max-width: 850px) {
-            .trabajos-container-dual { flex-direction: column; }
-            .nav-container { display: flex; overflow-x: auto; padding-bottom: 10px; gap: 10px; }
-            .btn-header { white-space: nowrap; }
+        .trabajos-container-dual { display: flex; flex-wrap: wrap; gap: 20px; padding: 15px; box-sizing: border-box; }
+        .columna-formulario { flex: 1; min-width: 380px; max-width: 420px; }
+        .columna-tabla { flex: 2.5; min-width: 600px; }
+        
+        /* --- DISEÑO DE TABLA MEJORADO --- */
+        .table-card table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: auto; /* Permite que las columnas respiren según contenido */
+        }
+        
+        .table-card th, .table-card td { 
+            padding: 14px 10px; 
+            vertical-align: middle; 
+            border-bottom: 1px solid #eee; 
+            text-align: left; 
         }
 
-        .radio-group { display: flex; gap: 20px; margin-top: 10px; }
-        .radio-label { background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd; flex: 1; text-align: center; cursor: pointer; }
+        /* Colores y efectos */
+        .table-card tr:hover { background-color: #f8fbff; }
+        
+        /* Anchos específicos para evitar solapamiento */
+        .col-fecha { width: 75px; }
+        .col-info { min-width: 250px; }
+        <?php if ($esAdmin): ?>
+        .col-operario { width: 130px; text-align: center; }
+        <?php endif; ?>
+        .col-factura { width: 85px; text-align: center; }
+        .col-total { width: 110px; text-align: right; white-space: nowrap; }
+        .col-accion { width: 120px; text-align: center; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 95%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .zona-material { 
+            background: #f1f4f6; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #3498db; box-sizing: border-box; width: 100%;
+        }
+        
+        .fila-material { 
+            background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; width: 100%;
+        }
+
+        .fila-material-controles { display: flex; gap: 8px; align-items: center; width: 100%; box-sizing: border-box; }
+        .input-buscador-material { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+
+        .buscador-localidad-container { background: #fff; padding: 15px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #3498db; }
+        .input-busqueda { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
+        
+        .btn-accion { padding: 8px; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-accion:hover { transform: scale(1.1); }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
     </style>
 </head>
 <body>
+
+    <datalist id="listaProductos">
+        <?php 
+        $id_user = $_SESSION['usuario_id'];
+        $sql_p = "SELECT p.id, p.nombre, p.cant_almacen, COALESCE(su.cantidad, 0) as cant_furgo
+                  FROM productos p
+                  LEFT JOIN stock_usuarios su ON p.id = su.id_producto AND su.id_usuario = $id_user
+                  ORDER BY p.nombre ASC";
+        $res_p = mysqli_query($conexion, $sql_p);
+        while($p = mysqli_fetch_assoc($res_p)) {
+            echo "<option data-id='{$p['id']}' value='" . htmlspecialchars($p['nombre']) . " (F: {$p['cant_furgo']} | T: {$p['cant_almacen']})'>";
+        }
+        ?>
+    </datalist>
+
+    <template id="templateFilaMaterial">
+        <div class="fila-material">
+            <div style="width: 100%;">
+                <input list="listaProductos" name="productos_nombres[]" class="input-buscador-material" placeholder="🔍 Buscar material..." onchange="actualizarIdProducto(this)" required>
+                <input type="hidden" name="productos[]">
+            </div>
+            <div class="fila-material-controles">
+                <select name="origenes[]" style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="furgoneta">🚐 Furgo</option>
+                    <option value="taller">🏭 Taller</option>
+                </select>
+                <input type="number" name="cantidades[]" value="1" min="1" style="width: 55px; padding: 8px; text-align: center; border-radius: 5px; border: 1px solid #ccc;">
+                <button type="button" class="btn-quitar" onclick="this.closest('.fila-material').remove()" style="background:#e74c3c; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">X</button>
+            </div>
+        </div>
+    </template>
+
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Trabajos- Cerrajería Pinos</h1>
+            <h1>Trabajos - Cerrajería Pinos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="stock.php" class="btn-header">📦 Stock</a>
-            <a href="plantillas.php"class="btn-header">🗒️ Plantillas</a>
+            <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
             <?php if ($esAdmin): ?>
                 <a href="ingresos.php" class="btn-header">💰 Ingresos</a>
-                <a href="empleados.php"class="btn-header">👥 Empleados</a>
+                <a href="gestion_usuarios.php" class="btn-header">👥 Empleados</a>
                 <a href="gastos.php" class="btn-header">💸 Gastos</a>
                 <a href="impuestos.php" class="btn-header">📊 Impuestos</a>
                 <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
+                <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <?php endif; ?>
-            <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
+            <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>
 
     <main class="trabajos-container-dual"> 
         <aside class="columna-formulario">
             <div class="card-formulario">
-                <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 10px;">Nuevo Trabajo</h2>
+                <h2>Nuevo Trabajo</h2>
                 <form id="formTrabajo" class="mi-formulario">
-                    <div class="input-group">
-                        <label>Cliente / Dirección</label>
-                        <input type="text" name="cliente" placeholder="Ej: Calle Mayor 5, 2B" required>
+                    <div class="grid-campos">
+                        <div class="input-group"><label>Teléfono <strong>*</strong></label><input type="tel" name="telefono" placeholder="600000000" required></div>
+                        <div class="input-group"><label>Localidad <strong>*</strong></label><input type="text" name="localidad" placeholder="Ej: Lorca" required></div>
                     </div>
-
                     <div class="input-group">
-                        <label>Descripción</label>
-                        <textarea name="description" placeholder="Apertura, cambio de bombín..." rows="3"></textarea>
-                    </div>
-
-                    <div class="zona-material" style="background: #ebf2f7; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <label>Empresa / Cliente</label>
+                        <select name="nombre_cliente" id="nombre_cliente" class="input-style">
+                            <option value="">-- Cliente Particular --</option>
+                            <?php
+        // Traemos las empresas que el cliente ha creado en su módulo
+        $res_emp = mysqli_query($conexion, "SELECT nombre FROM empresas ORDER BY nombre ASC");
+        while($e = mysqli_fetch_assoc($res_emp)) {
+            echo "<option value='".htmlspecialchars($e['nombre'])."'>".htmlspecialchars($e['nombre'])."</option>";
+        }
+        ?>
+    </select>
+    <small>Si es un particular, déjalo en blanco y usa el campo 'Dirección'.</small>
+</div>
+                    <div class="input-group"><label>Dirección <strong>*</strong></label><input type="text" name="cliente" placeholder="Calle, número, piso..." required></div>
+                    <div class="input-group"><label>Descripción</label><textarea name="description" placeholder="¿Qué se ha hecho?" rows="2"></textarea></div>
+                    <div class="zona-material">
                         <label><strong>Materiales utilizados</strong></label>
-                        <div id="contenedor-materiales">
+                        <div id="contenedor-materiales" style="margin-top: 10px;"></div>
+                        <button type="button" onclick="agregarFilaMaterial()" style="width:100%; margin-top:10px; background:#3498db; color:white; border:none; padding:12px; border-radius:5px; cursor:pointer; font-weight:bold;">➕ Añadir Material</button>
+                    </div>
+                    <div class="grid-campos">
+                        <div class="input-group"><label>Precio Cobrado (€)</label><input type="number" name="precio_total" step="0.01" required style="font-size: 1.3rem; font-weight: bold; color: #27ae60;"></div>
+                        <div class="input-group">
+                            <label>Factura</label>
+                            <div class="radio-group">
+                                <label class="radio-label"><input type="radio" name="factura" value="1"> SÍ</label>
+                                <label class="radio-label"><input type="radio" name="factura" value="0" checked> NO</label>
                             </div>
-                        <button type="button" onclick="agregarFilaMaterial()" style="width:100%; margin-top:10px; background:#3498db; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">
-                            ➕ Añadir Producto del Stock
-                        </button>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Precio Cobrado (€)</label>
-                        <input type="number" name="precio_total" step="0.01" placeholder="0.00" required style="font-size: 1.2rem; font-weight: bold;">
-                    </div>
-
-                    <div class="input-group">
-                        <label><strong>¿Lleva factura oficial?</strong></label>
-                        <div class="radio-group">
-                            <label class="radio-label"><input type="radio" name="factura" value="1"> SÍ</label>
-                            <label class="radio-label"><input type="radio" name="factura" value="0" checked> NO</label>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn-guardar" style="width: 100%; padding: 15px; font-size: 1.1rem; background: #27ae60;">💾 Guardar Trabajo</button>
+                    <button type="submit" class="btn-guardar" style="width: 100%; padding: 15px; background: #27ae60; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:10px;">💾 Guardar Trabajo</button>
                 </form>
             </div>
         </aside>
 
         <section class="columna-tabla">
             <div class="table-card">
-                <div class="header-tabla-dinamica" style="padding: 10px;">
-                    <div class="filtros-fecha" style="display: flex; align-items: flex-end; gap: 10px;">
-                        <div class="input-filtro">
-                            <label>Desde:</label>
-                            <input type="date" id="fechaInicio" class="input-style-mini">
-                        </div>
-                        <div class="input-filtro">
-                            <label>Hasta:</label>
-                            <input type="date" id="fechaFin" class="input-style-mini">
-                        </div>
-                        <button type="button" onclick="filtrarTrabajos()" class="btn-filtro" style="background:#34495e;">🔍</button>
-                    </div>
-                    
-                    <?php if ($esAdmin): ?>
-                    <div class="contador-total" style="margin-top: 15px; text-align: right;">
-                        <span style="font-size: 0.9rem; color: #7f8c8d;">Total Periodo:</span>
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #2c3e50;" id="totalFacturado">0.00€</div>
-                    </div>
-                    <?php endif; ?>
+                <div class="buscador-localidad-container">
+                    <input type="text" id="busquedaLocalidad" class="input-busqueda" placeholder="🔍 Buscar por localidad..." onkeyup="filtrarLocalidad()">
+                    <div id="info-filtro">📍 <span id="resumenFiltro">...</span></div>
                 </div>
 
-                <div class="tabla-scroll-vertical" style="overflow-x: auto;">
-                    <table id="tablaTrabajosResponsive">
+                <div class="header-tabla-dinamica" style="padding: 10px; background: #f8f9fa; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="date" id="fechaInicio" class="input-style-mini" style="flex:1;">
+                        <input type="date" id="fechaFin" class="input-style-mini" style="flex:1;">
+                        <button type="button" onclick="filtrarTrabajos()" class="btn-lupa" style="padding: 5px 15px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">Filtrar</button>
+                    </div>
+                </div>
+
+                <div class="tabla-scroll-vertical">
+                    <table id="tablaTrabajos">
                         <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Cliente</th>
-                                <th>Descripción</th>
-                                <th>Fact</th>
-                                <th>Total</th>
-                                <th>Acción</th>
+                            <tr style="background: #f1f4f6;">
+                                <th class="col-fecha">Fecha</th>
+                                <th class="col-info">Información Cliente</th>
+                                <?php if ($esAdmin): ?>
+                                <th class="col-operario">Operario</th>
+                                <?php endif; ?>
+                                <th class="col-factura">Factura</th>
+                                <th class="col-total">Total</th>
+                                <th class="col-accion">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="cuerpoTablaTrabajos">
@@ -200,69 +214,47 @@ include '../php/conexion.php';
         </section>
     </main>
 
-    <template id="templateFilaMaterial">
-        <div class="fila-material">
-            <select name="productos[]" style="flex:2; padding:8px;">
-                <option value="">-- Producto --</option>
-                <?php 
-                include '../php/conexion.php'; 
-                $res = mysqli_query($conexion, "SELECT id, nombre, cantidad FROM productos WHERE cantidad > 0 ORDER BY nombre ASC");
-                while($p = mysqli_fetch_assoc($res)) {
-                    echo "<option value='{$p['id']}'>{$p['nombre']} ({$p['cantidad']})</option>";
-                }
-                ?>
-            </select>
-            <input type="number" name="cantidades[]" value="1" min="1" style="flex:0.5; width:50px; padding:8px;" title="Cantidad">
-            <button type="button" onclick="this.parentElement.remove()" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">X</button>
-        </div>
-    </template>
-
-    <div id="modalEditarTrabajo" class="modal-overlay">
+    <div id="modalEditarTrabajo" class="modal">
         <div class="modal-content">
-            <h2 style="border-bottom: 2px solid #27ae60; padding-bottom: 10px; margin-top: 0;">Editar Trabajo</h2>
-            <form id="formEditarTrabajo">
-                <input type="hidden" id="edit_trabajo_id" name="id">
-                
-                <div class="input-group" style="margin-bottom: 15px;">
-                    <label style="display:block; font-weight:bold;">Cliente / Dirección</label>
-                    <input type="text" id="edit_trabajo_cliente" name="cliente" required style="width:100%; padding:8px;">
+            <h2 style="margin-bottom:15px;">Editar Trabajo</h2>
+            <form id="formEditarTrabajo" class="mi-formulario">
+                <input type="hidden" name="id" id="edit_trabajo_id">
+                <div class="grid-campos">
+                    <div class="input-group"><label>Teléfono</label><input type="tel" name="telefono" id="edit_trabajo_telefono" required></div>
+                    <div class="input-group"><label>Localidad</label><input type="text" name="localidad" id="edit_trabajo_localidad" required></div>
                 </div>
-
-                <div class="input-group" style="margin-bottom: 15px;">
-                    <label style="display:block; font-weight:bold;">Descripción</label>
-                    <textarea id="edit_trabajo_desc" name="description" rows="3" style="width:100%; padding:8px;"></textarea>
-                </div>
-
-                <div class="input-group" style="margin-bottom: 15px;">
-                    <label style="display:block; font-weight:bold;">Precio Cobrado (€)</label>
-                    <input type="number" id="edit_trabajo_precio" name="precio_total" step="0.01" required style="width:100%; padding:8px;">
-                </div>
-
-                <div class="input-group" style="margin-bottom: 20px;">
-                    <label style="display:block; font-weight:bold;">Estado</label>
-                    <select id="edit_trabajo_estado" name="estado" style="width:100%; padding:8px;">
-                        <option value="Pendiente">Pendiente</option>
-                        <option value="Finalizado">Finalizado</option>
-                        <option value="Cobrado">Cobrado ✅</option>
-                    </select>
-                </div>
-
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" style="flex:1; background:#27ae60; color:white; padding:12px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Actualizar</button>
-                    <button type="button" onclick="cerrarModal('modalEditarTrabajo')" style="flex:1; background:#95a5a6; color:white; padding:12px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Cancelar</button>
+                <div class="input-group"><label>Nombre Cliente</label><input type="text" name="nombre_cliente" id="edit_trabajo_nombre_cliente"></div>
+                <div class="input-group"><label>Dirección</label><input type="text" name="cliente" id="edit_trabajo_cliente" required></div>
+                <div class="input-group"><label>Descripción</label><textarea name="description" id="edit_trabajo_description" rows="2"></textarea></div>
+                <div class="input-group"><label>Precio (€)</label><input type="number" name="precio_total" id="edit_trabajo_precio" step="0.01" required></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn-guardar" style="flex:1; background:#27ae60; color:white; border:none; padding:12px; border-radius:5px; cursor:pointer;">Guardar</button>
+                    <button type="button" onclick="cerrarModal('modalEditarTrabajo')" style="flex:1; background:#95a5a6; color:white; border:none; padding:12px; border-radius:5px; cursor:pointer;">Cancelar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="../js/trabajos.js?v=1.3"></script>
+    <script src="../js/trabajos.js?v=<?php echo time(); ?>"></script>
     <script>
-        // Función rápida para el botón de añadir material
-        function agregarFilaMaterial() {
-            const temp = document.getElementById('templateFilaMaterial');
-            const clone = temp.content.cloneNode(true);
-            document.getElementById('contenedor-materiales').appendChild(clone);
+        function actualizarIdProducto(input) {
+            const list = document.getElementById('listaProductos');
+            const option = Array.from(list.options).find(opt => opt.value === input.value);
+            const hiddenInput = input.parentElement.querySelector('input[name="productos[]"]');
+            if (option) { hiddenInput.value = option.getAttribute('data-id'); } 
+            else { hiddenInput.value = ""; }
         }
+
+        window.agregarFilaMaterial = function() {
+            const contenedor = document.getElementById('contenedor-materiales');
+            const temp = document.getElementById('templateFilaMaterial');
+            if (contenedor && temp) {
+                const clone = temp.content.cloneNode(true);
+                contenedor.appendChild(clone);
+            }
+        };
+
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
 </body>
 </html>

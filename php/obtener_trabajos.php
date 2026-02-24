@@ -4,25 +4,21 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include 'conexion.php';
 
-// Verificamos quién está pidiendo los datos
 $usuario_id_sesion = $_SESSION['usuario_id'] ?? 0;
-// Usamos strtolower y trim para evitar fallos de formato en la BD
 $esAdmin = (isset($_SESSION['rol']) && strtolower(trim($_SESSION['rol'])) === 'admin');
 
 $inicio = $_GET['inicio'] ?? '';
 $fin = $_GET['fin'] ?? '';
 
-// 1. CONSULTA MEJORADA
+// Consulta para traer los datos y el nombre del empleado
 $query = "SELECT t.*, u.nombre as nombre_empleado,
-          GROUP_CONCAT(CONCAT(p.nombre, ' (', tm.cantidad, ')') SEPARATOR '<br>') AS materiales_usados
+          GROUP_CONCAT(CONCAT(p.nombre, ' (', tm.cantidad, ')') SEPARATOR ', ') AS materiales_lista
           FROM trabajos t 
           LEFT JOIN usuarios u ON t.usuario_id = u.id
           LEFT JOIN trabajo_materiales tm ON t.id = tm.trabajo_id
           LEFT JOIN productos p ON tm.producto_id = p.id ";
 
 $condiciones = [];
-
-// Si NO es admin, solo puede ver sus propios trabajos
 if (!$esAdmin) {
     $condiciones[] = "t.usuario_id = '$usuario_id_sesion'";
 }
@@ -43,39 +39,75 @@ $resultado = mysqli_query($conexion, $query);
 $sumaTotal = 0;
 $filasHTML = "";
 
+// Colspan dinámico para el mensaje de "No hay resultados"
+$totalColumnas = $esAdmin ? 6 : 5;
+
 if ($resultado && mysqli_num_rows($resultado) > 0) {
     while ($fila = mysqli_fetch_assoc($resultado)) {
-        $sumaTotal += $fila['precio_total'];
+        $sumaTotal += (float)$fila['precio_total'];
         
-        // CORRECCIÓN PARA PHP 8.1+ (InfinityFree): Añadimos ?? "" a los campos que pueden ser NULL
         $datosJSON = htmlspecialchars(json_encode($fila, JSON_HEX_QUOT | JSON_HEX_APOS), ENT_QUOTES, 'UTF-8');
-        $iconoFactura = ($fila['factura'] == 1) ? "<span style='color: #27ae60; font-weight:bold;'>📄 SÍ</span>" : "<span style='color: #888;'>❌ NO</span>";
-        $materiales = !empty($fila['materiales_usados']) ? $fila['materiales_usados'] : '<small style="color:#bbb;">Solo mano obra</small>';
+        
+        $iconoFactura = ($fila['factura'] == 1) 
+            ? "<div style='color: #27ae60; font-weight: bold; font-size: 0.75rem; border: 1.5px solid #27ae60; padding: 2px 6px; border-radius: 4px; display: inline-block; background: #ebf9f1;'>SÍ</div>" 
+            : "<div style='color: #bdc3c7; font-weight: bold; font-size: 0.75rem; border: 1.5px solid #bdc3c7; padding: 2px 4px; border-radius: 4px; display: inline-block;'>NO</div>";
 
-        // Nombre del empleado (con protección contra nulos)
-        $nombreEmp = htmlspecialchars($fila['nombre_empleado'] ?? "Desconocido");
-        $columnaEmpleado = $esAdmin ? "<br><small style='color:#3498db;'>👤 " . $nombreEmp . "</small>" : "";
+        // Bloque de información del cliente
+        $htmlInfo = "<div style='display: flex; flex-direction: column; gap: 3px;'>";
+            if(!empty($fila['nombre_cliente'])){
+                $htmlInfo .= "<div style='font-weight: 700; color: #2c3e50; font-size: 0.95rem;'>" . strtoupper(htmlspecialchars($fila['nombre_cliente'])) . "</div>";
+            }
+            $htmlInfo .= "<div style='color: #2980b9; font-weight: 600; font-size: 0.9rem;'>📍 " . htmlspecialchars($fila['cliente'] ?? "") . "</div>";
+            $htmlInfo .= "<div style='font-size: 0.8rem; color: #7f8c8d;'>📞 " . htmlspecialchars($fila['telefono'] ?? "---") . " | 🏙️ " . htmlspecialchars($fila['localidad'] ?? "---") . "</div>";
+            
+            if(!empty($fila['descripcion'])){
+                $htmlInfo .= "<div style='background: #f9f9f9; border-left: 3px solid #3498db; padding: 4px 8px; font-size: 0.8rem; color: #555; margin-top: 4px; border-radius: 0 4px 4px 0; font-style: italic;'>" . htmlspecialchars($fila['descripcion']) . "</div>";
+            }
+        $htmlInfo .= "</div>";
 
         $filasHTML .= "<tr>
-            <td data-label='Fecha'>" . date("d/m/Y", strtotime($fila['fecha'])) . "</td>
-            <td data-label='Cliente'><strong>" . htmlspecialchars($fila['cliente'] ?? "") . "</strong> $columnaEmpleado</td>
-            <td data-label='Descripción'>" . htmlspecialchars($fila['descripcion'] ?? "") . "</td>
-            <td data-label='Factura' style='text-align:center;'>$iconoFactura</td>
-            <td data-label='Materiales'>$materiales</td>
-            <td data-label='Total' style='color: #27ae60; font-weight: bold;'>" . number_format($fila['precio_total'], 2) . "€</td>
-            <td data-label='Acciones'>
-                <div style='display: flex; gap: 10px; justify-content: center;'>
-                    <button class='btn-header' style='background: #27ae60; padding: 10px; border:none; border-radius:5px; cursor:pointer;' onclick='abrirEditarTrabajo($datosJSON)'>✏️</button>
-                    <button class='btn-header' style='background: #e74c3c; padding: 10px; border:none; border-radius:5px; cursor:pointer;' onclick='eliminarTrabajo({$fila['id']})'>🗑️</button>
+            <td class='col-fecha' style='vertical-align: middle; font-size: 0.85rem;'>
+                <span style='display:block; font-weight:800;'>" . date("d/m", strtotime($fila['fecha'])) . "</span>
+                <small style='color:#95a5a6;'>" . date("Y", strtotime($fila['fecha'])) . "</small>
+            </td>
+            <td class='col-info' style='border-left: 1px solid #f1f1f1;'>$htmlInfo</td>";
+
+        // COLUMNA OPERARIO (Solo si es Admin)
+        if ($esAdmin) {
+            $nombreOp = htmlspecialchars($fila['nombre_empleado'] ?? '---');
+            $filasHTML .= "<td class='col-operario' style='vertical-align: middle;'>
+                <div style='background: #e8f4fd; padding: 5px 10px; border-radius: 20px; display: inline-block; font-weight: 600; color: #2980b9; font-size: 0.8rem; border: 1px solid #d1e9f9;'>
+                    👤 " . strtoupper($nombreOp) . "
+                </div>
+            </td>";
+        }
+
+        $filasHTML .= "<td class='col-factura'>$iconoFactura</td>
+            
+            <td class='col-total' data-precio='{$fila['precio_total']}' style='vertical-align: middle; font-weight: 800; color: #2ecc71; font-size: 1.05rem;'>
+             " . number_format($fila['precio_total'], 2, ',', '.') . "€
+            </td>
+            
+            <td class='col-accion' style='vertical-align: middle;'>
+                <div style='display: flex; gap: 6px; justify-content: center;'>
+                    <button type='button' title='Editar' style='background: #3498db; color: white; border:none; width: 32px; height: 32px; border-radius: 6px; cursor:pointer; display: flex; align-items: center; justify-content: center;' onclick='abrirEditarTrabajo($datosJSON)'>✏️</button>
+                    <button type='button' title='Eliminar' style='background: #e74c3c; color: white; border:none; width: 32px; height: 32px; border-radius: 6px; cursor:pointer; display: flex; align-items: center; justify-content: center;' onclick='eliminarTrabajo({$fila['id']})'>🗑️</button>
                 </div>
             </td>
         </tr>";
     }
 } else {
-    $filasHTML = "<tr><td colspan='7' style='text-align:center; padding: 30px; color: #7f8c8d;'>No hay trabajos registrados.</td></tr>";
+    $filasHTML = "<tr><td colspan='$totalColumnas' style='text-align:center; padding: 40px; color: #95a5a6;'>No se encontraron trabajos con los filtros seleccionados.</td></tr>";
 }
 
 echo $filasHTML;
-echo "<script>if(document.getElementById('totalFacturado')) { document.getElementById('totalFacturado').innerText = '" . number_format($sumaTotal, 2) . "€'; }</script>";
+
+// Actualización del total en el pie de página o dashboard
+echo "<script>
+    if(document.getElementById('totalFacturado')) { 
+        document.getElementById('totalFacturado').innerText = '" . number_format($sumaTotal, 2, ',', '.') . "€'; 
+    }
+</script>";
+
 $conexion->close();
 ?>

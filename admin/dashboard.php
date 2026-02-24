@@ -36,8 +36,26 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
             height: 100%;
         }
 
+        /* Clase para que la gráfica ocupe dos columnas en pantallas grandes */
+        .card-wide {
+            grid-column: span 2;
+        }
+
         .card:active {
             transform: scale(0.98); /* Efecto de pulsación en móvil */
+        }
+        /* Ajuste para que las tarjetas de gráficas tengan espacio suficiente */
+        .card-grafica-ajustada {
+        min-height: 400px !important; /* Le damos un poco más de aire */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        }
+
+        @media (max-width: 900px) {
+            .card-wide {
+                grid-column: span 1;
+            }
         }
 
         @media (max-width: 600px) {
@@ -85,8 +103,7 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
 
     <main class="dashboard-container">
         
-        <div id="contenedorAlertas" style="grid-column: 1 / -1;">
-            </div>
+        <div id="contenedorAlertas" style="grid-column: 1 / -1;"></div>
 
         <div class="card">
             <div class="card-icon" style="font-size: 2.5rem; margin-bottom: 10px;">🛠️</div>
@@ -132,6 +149,22 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
                 <a href="ingresosb.php" class="btn-acceder">Gestionar</a>
             </div>
 
+            <div class="card card-wide" style="border-top: 5px solid #3498db; background: white; padding: 20px; border-radius: 12px;">
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">📊 Facturación por Localidad (Mes Actual) </h3>
+                <div style="height: 250px; width: 100%;">
+                    <canvas id="graficaLocalidades"></canvas>
+                </div>
+            </div>
+            <div class="card card-grafica-ajustada" style="border-top: 5px solid #2ecc71;">
+            <h3 style="color: #2c3e50; margin-bottom: 10px; font-size: 1.1rem; text-align: center;">
+            📈 Balance Ingresos vs Gastos
+            </h3>
+            <div style="position: relative; height: 200px; width: 100%;"> <canvas id="graficaBalance"></canvas>
+            </div>
+            <div id="infoBeneficio" style="text-align: center; margin-top: 10px;"></div>
+            </div>
+            </div>
+
             <div class="card" style="border-top: 5px solid #e67e22;">
                 <div class="card-icon" style="font-size: 2.5rem; margin-bottom: 10px;">📊</div>
                 <h3>Impuestos</h3>
@@ -155,9 +188,83 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
                 </a>
             </div>
 
+             <div class="card" style="border-top: 5px solid #73b4f5;">
+                <div class="card-icon" style="font-size: 2.5rem; margin-bottom: 10px;">🏢</div>
+                <h3>Empresas</h3>
+                <p>Empresas de trabajo</p>
+                <a href="empresas.php" class="btn-acceder" style="background: #34495e; color: white;">
+                    Gestionar
+                </a>
+            </div>
+
         <?php endif; ?>
 
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/dashboard.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('../php/datos_grafica_localidad.php')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('graficaLocalidades').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) { return value + '€'; }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error("Error cargando gráfica:", err));
+    });
+    // Gráfica de Balance (Ingresos vs Gastos)
+// Gráfica de Balance (Ingresos vs Gastos)
+fetch('../php/datos_grafica_balance.php')
+    .then(response => response.json())
+    .then(data => {
+        const ctxBalance = document.getElementById('graficaBalance').getContext('2d');
+        
+        const ingresos = data.datasets[0].data[0] || 0;
+        const gastos = data.datasets[0].data[1] || 0;
+        const beneficio = ingresos - gastos;
+        const colorBeneficio = beneficio >= 0 ? '#2ecc71' : '#e74c3c';
+
+        new Chart(ctxBalance, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } }
+                }
+            }
+        });
+
+        // Inyectamos el beneficio en el hueco reservado
+        const divInfo = document.getElementById('infoBeneficio');
+        divInfo.innerHTML = `
+            <p style="margin: 0; font-size: 0.8rem; color: #7f8c8d; font-weight: bold;">BENEFICIO NETO (MES)</p>
+            <p style="margin: 0; font-size: 1.4rem; color: ${colorBeneficio}; font-weight: bold;">
+                ${beneficio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}€
+            </p>
+        `;
+    });
+    </script>
+    
 </body>
 </html>

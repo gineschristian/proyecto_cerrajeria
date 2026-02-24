@@ -62,6 +62,7 @@ include '../php/conexion.php';
                 <a href="gestion_usuarios.php" class="btn-header">👥 Empleados </a>
                 <a href="impuestos.php" class="btn-header">📊 Impuestos</a>
                 <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
+                <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <?php endif; ?>
 
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>

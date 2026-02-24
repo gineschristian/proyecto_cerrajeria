@@ -74,7 +74,7 @@ include '../php/conexion.php';
     <header>
         <div class="header-content">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
-            <h1>Estrategia Fiscal / Impuestos - Cerrajeria Pinos</h1>
+            <h1>Impuestos-Cerrajeria Pinos</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
@@ -85,6 +85,7 @@ include '../php/conexion.php';
             <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
+            <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>
