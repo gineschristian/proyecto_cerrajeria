@@ -8,26 +8,45 @@ if (!isset($_SESSION['rol']) || strtolower(trim($_SESSION['rol'])) !== 'admin') 
 }
 
 $proveedor_nom = $_GET['nombre'] ?? '';
+$inicio = $_GET['inicio'] ?? ''; // Captura fecha inicio
+$fin = $_GET['fin'] ?? '';       // Captura fecha fin
+
+// Si intentan entrar sin un nombre de proveedor, los devolvemos
+if (empty($proveedor_nom)) {
+    header("Location: ../admin/proveedores.php");
+    exit;
+}
 
 // Consultar los gastos de este proveedor
 $p_limpio = mysqli_real_escape_string($conexion, $proveedor_nom);
-$res = mysqli_query($conexion, "SELECT * FROM gastos WHERE proveedor = '$p_limpio' ORDER BY fecha DESC");
+
+// Construcción de la consulta con filtro de fecha
+$query = "SELECT * FROM gastos WHERE proveedor = '$p_limpio'";
+
+if (!empty($inicio) && !empty($fin)) {
+    $inicioClean = mysqli_real_escape_string($conexion, $inicio);
+    $finClean = mysqli_real_escape_string($conexion, $fin);
+    $query .= " AND fecha BETWEEN '$inicioClean' AND '$finClean'";
+}
+
+$query .= " ORDER BY fecha DESC";
+$res = mysqli_query($conexion, $query);
 
 $total = 0;
 $filas_html = "";
 
-if (mysqli_num_rows($res) > 0) {
+if ($res && mysqli_num_rows($res) > 0) {
     while($row = mysqli_fetch_assoc($res)){
         $total += $row['monto'];
         $filas_html .= "
             <tr>
                 <td>".date('d/m/Y', strtotime($row['fecha']))."</td>
                 <td>".htmlspecialchars($row['concepto'])."</td>
-                <td style='text-align:right;'>".number_format($row['monto'], 2)."€</td>
+                <td style='text-align:right; font-weight:bold;'>".number_format($row['monto'], 2, ',', '.')."€</td>
             </tr>";
     }
 } else {
-    $filas_html = "<tr><td colspan='3' style='text-align:center;'>No hay gastos registrados para este proveedor.</td></tr>";
+    $filas_html = "<tr><td colspan='3' style='text-align:center; padding:20px;'>No hay gastos registrados en este periodo.</td></tr>";
 }
 ?>
 <!DOCTYPE html>
@@ -59,7 +78,8 @@ if (mysqli_num_rows($res) > 0) {
         }
         .card-total h2 { margin: 0; color: #333; font-size: 1.5rem; text-transform: uppercase; }
         .card-total p { margin: 5px 0; color: #888; font-weight: bold; font-size: 0.9rem; }
-        .monto-grande { color: #27ae60; font-size: 3rem; font-weight: 800; margin-top: 10px; }
+        /* Cambiado a rojo para simbolizar GASTO */
+        .monto-grande { color: #e74c3c; font-size: 3rem; font-weight: 800; margin-top: 10px; }
 
         /* Tarjeta de la Tabla */
         .card-tabla {
@@ -87,53 +107,56 @@ if (mysqli_num_rows($res) > 0) {
             border-radius: 5px;
             font-size: 0.9rem;
         }
-        /* Estilo del botón */
-.btn-pdf {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-left: 10px;
-}
 
-/* CONFIGURACIÓN PARA EL PDF (Solo se activa al imprimir) */
-@media print {
-    header, .btn-pdf, .btn-volver {
-        display: none !important; /* Oculta botones y header en el PDF */
-    }
-    body {
-        background: white; /* Fondo blanco para ahorrar tinta */
-    }
-    .container {
-        padding: 0;
-        max-width: 100%;
-    }
-    .card-total, .card-tabla {
-        box-shadow: none; /* Quitamos sombras para que quede más limpio en papel */
-        border: 1px solid #eee;
-    }
-}
+        .btn-pdf {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .info-filtro {
+            font-size: 0.85rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+
+        @media print {
+            header, .btn-pdf, .btn-volver {
+                display: none !important;
+            }
+            body { background: white; }
+            .container { padding: 0; max-width: 100%; }
+            .card-total, .card-tabla { box-shadow: none; border: 1px solid #eee; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:1.2rem;">📂</span>
-        <h1 style="margin:0; font-size:1.2rem;">Historial: <?php echo htmlspecialchars($proveedor_nom); ?></h1>
+    <div style="display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.2rem;">🚚</span>
+            <h1 style="margin:0; font-size:1.2rem;">Historial Proveedor: <?php echo htmlspecialchars($proveedor_nom); ?></h1>
+        </div>
+        <?php if(!empty($inicio)): ?>
+            <div class="info-filtro">Periodo: <?php echo date('d/m/Y', strtotime($inicio)); ?> - <?php echo date('d/m/Y', strtotime($fin)); ?></div>
+        <?php endif; ?>
     </div>
-    <button onclick="window.print()" class="btn-pdf">📄 Generar PDF / Imprimir</button>
-    <a href="../admin/proveedores.php" class="btn-volver">⬅️ Volver</a>
-    
+    <div>
+        <button onclick="window.print()" class="btn-pdf">📄 Generar PDF / Imprimir</button>
+        <a href="../admin/proveedores.php" class="btn-volver">⬅️ Volver</a>
+    </div>
 </header>
 
 <div class="container">
     <div class="card-total">
-        <h2>Gastos Realizados</h2>
-        <p>TOTAL ACUMULADO:</p>
+        <h2>Gastos en este periodo</h2>
+        <p>TOTAL FACTURADO:</p>
         <div class="monto-grande"><?php echo number_format($total, 2, ',', '.'); ?>€</div>
     </div>
 
@@ -142,7 +165,7 @@ if (mysqli_num_rows($res) > 0) {
             <thead>
                 <tr>
                     <th>Fecha</th>
-                    <th>Descripción</th>
+                    <th>Descripción / Concepto</th>
                     <th style="text-align:right;">Total</th>
                 </tr>
             </thead>

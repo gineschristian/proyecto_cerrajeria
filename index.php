@@ -50,11 +50,11 @@
 <body>
 
     <div class="login-card">
-        <img src="proyecto_cerrajeria/img/logo.png" alt="Logo Cerrajería Pinos">
+        <img src="img/logo.png" alt="Logo Cerrajería Pinos">
         
         <h2>Gestión de Acceso</h2>
 
-        <form action="proyecto_cerrajeria/php/auth.php" method="POST">
+        <form action="php/auth.php" method="POST">
             <div class="input-group" style="text-align: left; margin-bottom: 20px;">
                 <label for="usuario" style="display: block; color: #666; font-size: 0.9em;">Nombre de Usuario</label>
                 <input type="text" name="usuario" id="usuario" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required placeholder="Introduce tu usuario">

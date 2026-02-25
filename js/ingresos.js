@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("JS Cargado correctamente"); // Verás esto en la consola al refrescar
+    console.log("JS Cargado correctamente");
     
     const formEditar = document.getElementById('formEditarIngreso');
     if (formEditar) {
@@ -10,12 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.text())
             .then(mensaje => {
                 alert(mensaje);
-                if (mensaje.includes("✅")) { cerrarModal('modalEditarIngreso'); filtrarIngresos(); }
+                if (mensaje.includes("✅")) { 
+                    cerrarModal('modalEditarIngreso'); 
+                    filtrarIngresos(); 
+                }
             });
         });
     }
-    // Calcular al cargar
-    setTimeout(actualizarSumaIngresosFiltrados, 800);
+
+    // ELIMINADO: setTimeout(actualizarSumaIngresosFiltrados, 800);
+    // Ya no hace falta porque PHP carga los totales directamente en el HTML.
 });
 
 function filtrarIngresos() {
@@ -28,8 +32,8 @@ function filtrarIngresos() {
         .then(res => res.text())
         .then(html => {
             document.getElementById('cuerpoTablaIngresos').innerHTML = html;
-            // Damos tiempo a la tabla para que aparezca
-            setTimeout(actualizarSumaIngresosFiltrados, 300);
+            // Solo recalculamos después de una acción de filtrado manual
+            actualizarSumaIngresosFiltrados();
         })
         .catch(error => console.error('Error AJAX:', error));
 }
@@ -51,13 +55,10 @@ function actualizarSumaIngresosFiltrados() {
             let tipo = fila.cells[2].innerText.toUpperCase().replace('TIPO', '').trim();
             let textoMonto = fila.cells[3].innerText.replace('MONTO', '').replace('€', '').trim();
 
-            // Limpieza inteligente de moneda europea
-            // Si tiene punto y coma (1.234,56), quitamos el punto y cambiamos coma por punto
             if (textoMonto.includes(',') && textoMonto.includes('.')) {
                 textoMonto = textoMonto.replace(/\./g, '');
                 textoMonto = textoMonto.replace(',', '.');
             } 
-            // Si solo tiene coma (1234,56), la cambiamos por punto
             else if (textoMonto.includes(',')) {
                 textoMonto = textoMonto.replace(',', '.');
             }
@@ -74,8 +75,6 @@ function actualizarSumaIngresosFiltrados() {
         }
     });
 
-    // ESTO ES LO QUE ACTUALIZA LOS CUADROS
-    // Asegúrate de que estos IDs existan en tu ingresos.php
     const domA = document.getElementById('totalOficial');
     const domB = document.getElementById('totalB');
     const domGen = document.getElementById('totalGeneral');
@@ -83,4 +82,21 @@ function actualizarSumaIngresosFiltrados() {
     if (domA) domA.innerText = sumaA.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
     if (domB) domB.innerText = sumaB.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
     if (domGen) domGen.innerText = (sumaA + sumaB).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '€';
+}
+
+// FUNCIONES DE MODAL (Mantenidas para compatibilidad)
+function cerrarModal(idModal) {
+    const modal = document.getElementById(idModal);
+    if (modal) modal.style.display = 'none';
+}
+
+function eliminarIngreso(id, tabla) {
+    if (confirm('¿Seguro que deseas eliminar este ingreso?')) {
+        fetch(`../php/eliminar_ingreso.php?id=${id}&tabla=${tabla}`)
+            .then(res => res.text())
+            .then(mensaje => {
+                alert(mensaje);
+                filtrarIngresos();
+            });
+    }
 }

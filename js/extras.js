@@ -36,11 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Calcular total inicial con un pequeño margen
-    setTimeout(actualizarTotalExtras, 600);
+    // ELIMINADO EL SETTIMEOUT: Ya no hace falta porque el PHP carga el total al inicio.
 });
 
-// 3. FUNCIÓN DE FILTRADO (Con log de control)
+// 3. FUNCIÓN DE FILTRADO
 function filtrarExtras() {
     const inicio = document.getElementById('fechaInicioB').value;
     const fin = document.getElementById('fechaFinB').value;
@@ -49,8 +48,8 @@ function filtrarExtras() {
         .then(res => res.text())
         .then(html => {
             document.getElementById('cuerpoTablaExtras').innerHTML = html;
-            // IMPORTANTE: Recalcular después de inyectar el HTML
-            setTimeout(actualizarTotalExtras, 150);
+            // Solo recalculamos cuando el usuario interactúa con los filtros
+            actualizarTotalExtras();
         })
         .catch(error => console.error('Error al filtrar:', error));
 }
@@ -61,17 +60,17 @@ function limpiarFiltroExtras() {
     filtrarExtras();
 }
 
-// 4. ACTUALIZAR TOTAL (Optimizado para leer el input oculto del PHP)
+// 4. ACTUALIZAR TOTAL
 function actualizarTotalExtras() {
-    // Intentamos leer el total que ya calculó el PHP (es más exacto)
     const inputTotal = document.getElementById('nuevoTotalB');
     const domTotal = document.getElementById('totalExtras');
 
+    // Si el PHP ha inyectado un nuevo input de total tras el fetch
     if (inputTotal && domTotal) {
         let valorCifrado = parseFloat(inputTotal.value);
         domTotal.innerText = valorCifrado.toLocaleString('de-DE', {minimumFractionDigits: 2}) + '€';
     } else {
-        // Si no detecta el input del PHP, lo hace manualmente por las filas
+        // Cálculo manual de respaldo si el input no existe
         let totalManual = 0;
         const filas = document.querySelectorAll('#cuerpoTablaExtras tr');
 
@@ -93,7 +92,7 @@ function actualizarTotalExtras() {
     }
 }
 
-// 5. FUNCIÓN ELIMINAR (Añadida para que funcione tu botón de papelera)
+// 5. FUNCIÓN ELIMINAR
 function eliminarExtra(id) {
     if (confirm('¿Seguro que deseas eliminar este ingreso extra?')) {
         fetch(`../php/eliminar_extra.php?id=${id}`)

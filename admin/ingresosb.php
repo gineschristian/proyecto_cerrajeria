@@ -5,22 +5,24 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // 1. Verificamos si existe la sesión
 if (!isset($_SESSION['usuario_id'])) {
-    // CORRECCIÓN: Apuntamos al index.html en la raíz
     header("Location: ../index.html");
     exit();
 }
 
-// 2. Verificamos el rol (usando trim por seguridad de la BD)
+// 2. Verificamos el rol
 $rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
 
 if ($rol !== 'admin') {
-    // Si es empleado, lo devolvemos al dashboard con un mensaje
     header("Location: dashboard.php?error=acceso_denegado");
     exit();
 }
 
-// Si llega aquí, es Admin y puede ver el contenido
 include '../php/conexion.php'; 
+
+// --- CÁLCULO DE ACUMULADO INICIAL ---
+$res_total = mysqli_query($conexion, "SELECT SUM(monto) as total FROM ingresos_b");
+$row_total = mysqli_fetch_assoc($res_total);
+$acumulado_b = $row_total['total'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -34,6 +36,54 @@ include '../php/conexion.php';
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
     <style>
+        header { 
+            background-color: #2c3e50 !important; 
+            padding: 10px 15px !important;
+            display: block !important;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-content h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            color: white; 
+        }
+
+        .logo-img { 
+            height: 40px; 
+            width: auto; 
+        }
+
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
         .nav-container {
             display: flex;
             flex-wrap: wrap;
@@ -52,7 +102,6 @@ include '../php/conexion.php';
             }
         }
         @media print {
-    /* 1. Ocultar todo lo que no sea información */
     header, 
     .nav-container, 
     .columna-formulario, 
@@ -64,7 +113,6 @@ include '../php/conexion.php';
         display: none !important;
     }
 
-    /* 2. Ajustar el contenedor principal */
     body {
         background: white !important;
         margin: 0;
@@ -82,7 +130,6 @@ include '../php/conexion.php';
         padding: 0 !important;
     }
 
-    /* 3. Estilo del título y totales */
     .header-tabla-dinamica {
         display: flex !important;
         justify-content: space-between !important;
@@ -103,7 +150,6 @@ include '../php/conexion.php';
         font-weight: bold !important;
     }
 
-    /* 4. Ajustar la tabla para que ocupe todo el ancho */
     .table-card {
         box-shadow: none !important;
         border: none !important;
@@ -126,7 +172,6 @@ include '../php/conexion.php';
         color: black !important;
     }
 
-    /* Forzar que el color de fondo se imprima en algunos navegadores */
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -137,20 +182,22 @@ include '../php/conexion.php';
 <body>
     <header>
         <div class="header-content">
-            <img src="../img/logo.png" alt="Logo" class="logo-img">
+            <a href="dashboard.php">
+            <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
+            </a>
             <h1>Control de Extras</h1>
         </div>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header" > 🏠 Panel</a>
-        <a href="stock.php" class="btn-header" > 📦 Stock</a>
-        <a href="impuestos.php" class="btn-header" >📊 Impuestos</a>
-        <a href="gestion_usuarios.php" class="btn-header">👥 Empleados </a>
-        <a href="ingresos.php" class="btn-header" >💰 Ingresos</a>
-        <a href="trabajos.php" class="btn-header" >🛠️ Trabajos</a>
-        <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
-        <a href="gastos.php" class="btn-header" > 💸 Gastos</a>
-        <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
-        <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+            <a href="stock.php" class="btn-header" > 📦 Stock</a>
+            <a href="impuestos.php" class="btn-header" >📊 Impuestos</a>
+            <a href="gestion_usuarios.php" class="btn-header">👥 Empleados </a>
+            <a href="ingresos.php" class="btn-header" >💰 Ingresos</a>
+            <a href="trabajos.php" class="btn-header" >🛠️ Trabajos</a>
+            <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
+            <a href="gastos.php" class="btn-header" > 💸 Gastos</a>
+            <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+            <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>
@@ -192,7 +239,7 @@ include '../php/conexion.php';
             <h2>Listado de Dinero Extra</h2>
             <div class="contador-total" style="background: #e67e22;">
                 <span class="etiqueta">Acumulado B:</span>
-                <span class="cifra" id="totalExtras" style="color: black;">0.00€</span>
+                <span class="cifra" id="totalExtras" style="color: black;"><?php echo number_format($acumulado_b, 2, ',', '.'); ?>€</span>
             </div>
         </div>
 

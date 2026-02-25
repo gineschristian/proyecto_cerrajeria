@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 3. ACTUALIZACIÓN DE PRODUCTO EXISTENTE (DINÁMICO) ---
+    // --- 3. ACTUALIZACIÓN DE PRODUCTO EXISTENTE ---
     if (formEditarStock) {
         formEditarStock.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- 5. FUNCIÓN DE FILTRADO POR UBICACIÓN ESCALABLE ---
+// --- 5. FILTRADO POR UBICACIÓN ---
 function filtrarUbicacion(idUsuario) {
     const filas = document.querySelectorAll('#cuerpoTabla tr');
     const buscador = document.getElementById('buscadorStock');
@@ -76,7 +76,6 @@ function filtrarUbicacion(idUsuario) {
             return;
         }
 
-        // Buscamos la celda que tiene el data-user-id correspondiente
         const celdasStock = fila.querySelectorAll('td[data-user-id]');
         let valor = 0;
 
@@ -93,7 +92,60 @@ function filtrarUbicacion(idUsuario) {
     });
 }
 
-// --- FUNCIONES GLOBALES ---
+// --- 6. CATEGORÍAS (AÑADIR Y ELIMINAR) ---
+
+function guardarNuevaCategoria() {
+    const nombreInput = document.getElementById('nuevaCategoriaNombre');
+    const nombre = nombreInput.value.trim();
+    
+    if (!nombre) {
+        alert("Escribe un nombre para la categoría");
+        return;
+    }
+
+    const datos = new URLSearchParams();
+    datos.append('nombre', nombre);
+
+    fetch('../php/guardar_categoria.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: datos
+    })
+    .then(res => res.text())
+    .then(mensaje => {
+        if (mensaje.includes("✅")) {
+            location.reload(); 
+        } else {
+            alert(mensaje);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function eliminarCategoria(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar la categoría "${nombre}"?\n\nNota: Los productos no se borrarán, pero se quedarán sin categoría.`)) {
+        
+        const datos = new URLSearchParams();
+        datos.append('id', id);
+
+        fetch('../php/eliminar_categoria.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: datos
+        })
+        .then(res => res.text())
+        .then(mensaje => {
+            if (mensaje.includes("✅")) {
+                location.reload();
+            } else {
+                alert("Error: " + mensaje);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+
+// --- 7. FUNCIONES GLOBALES DE TABLA Y MODAL ---
 
 function actualizarTabla() {
     fetch('../php/obtener_producto.php?t=' + Date.now())
@@ -105,19 +157,17 @@ function actualizarTabla() {
         .catch(error => console.error('Error al refrescar tabla:', error));
 }
 
-// ABRIR MODAL CON CARGA DINÁMICA DE EMPLEADOS
 function abrirEditarStock(producto) {
     document.getElementById('edit_id').value = producto.id;
     document.getElementById('edit_nombre').value = producto.nombre;
     document.getElementById('edit_categoria').value = producto.categoria;
     
-    // Contenedor donde generaremos los inputs
     const contenedor = document.getElementById('contenedorCantidadesDinamicas');
     if (!contenedor) return;
     
-    contenedor.innerHTML = ''; // Limpiar
+    contenedor.innerHTML = ''; 
 
-    // 1. Input para Taller (Almacén Central)
+    // Taller
     contenedor.innerHTML += `
         <div class="input-group">
             <label>🏭 Taller (Stock Central)</label>
@@ -125,13 +175,11 @@ function abrirEditarStock(producto) {
         </div>
     `;
 
-    // 2. Generar Inputs para cada Empleado/Furgoneta detectada en la tabla
+    // Empleados
     const cabeceras = document.querySelectorAll('#tablaStock th[data-user-id]');
-    
     cabeceras.forEach(th => {
         const idUsuario = th.getAttribute('data-user-id');
         const nombreUsuario = th.textContent.replace('F. ', '');
-        // El stock viene del desglose que enviamos en el JSON del PHP
         const cantidadActual = (producto.desglose_stock && producto.desglose_stock[idUsuario]) 
                                ? producto.desglose_stock[idUsuario] : 0;
 
@@ -161,5 +209,29 @@ function eliminar(id) {
             actualizarTabla(); 
         })
         .catch(error => console.error('Error al eliminar:', error));
+    }
+}
+function editarCategoria(id, nombreAntiguo) {
+    const nuevoNombre = prompt("Editar nombre de la categoría:", nombreAntiguo);
+    
+    if (nuevoNombre !== null && nuevoNombre.trim() !== "" && nuevoNombre !== nombreAntiguo) {
+        const datos = new URLSearchParams();
+        datos.append('id', id);
+        datos.append('nombre', nuevoNombre.trim());
+
+        fetch('../php/editar_categoria.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: datos
+        })
+        .then(res => res.text())
+        .then(mensaje => {
+            if (mensaje.includes("✅")) {
+                location.reload();
+            } else {
+                alert(mensaje);
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
 }

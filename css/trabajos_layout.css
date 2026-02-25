@@ -4,20 +4,20 @@
     flex-direction: row;
     gap: 20px;
     padding: 20px;
-    align-items: flex-start; /* Alinea arriba */
+    align-items: flex-start; 
     max-width: 100%;
     margin: 0 auto;
 }
 
-/* Columna izquierda (30% de la pantalla aprox) */
+/* Columna izquierda */
 .columna-formulario {
     flex: 1;
     min-width: 350px;
-    position: sticky; /* Se queda fijo al hacer scroll si la pantalla es alta */
+    position: sticky; 
     top: 20px;
 }
 
-/* Columna derecha (70% de la pantalla aprox) */
+/* Columna derecha */
 .columna-tabla {
     flex: 2.5;
     min-width: 600px;
@@ -25,7 +25,7 @@
 
 /* Estilo para que la tabla no se salga y tenga scroll propio */
 .tabla-scroll-vertical {
-    max-height: 80vh; /* Altura máxima del 80% de la pantalla */
+    max-height: 80vh; 
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -40,7 +40,7 @@
     margin-bottom: 15px;
 }
 .factura-selector {
-    background: rgba(39, 174, 96, 0.1); /* Un tono verde suave */
+    background: rgba(39, 174, 96, 0.1); 
     padding: 15px;
     border-radius: 8px;
     border: 1px solid rgba(39, 174, 96, 0.3);
@@ -61,19 +61,26 @@
     gap: 5px;
 }
 
-/* Ajuste para móviles: se pone uno debajo del otro */
+/* === SECCIÓN CORREGIDA PARA MÓVILES === */
 @media (max-width: 1024px) {
     .trabajos-container-dual {
         flex-direction: column;
     }
     .columna-formulario, .columna-tabla {
-        width: 100%;
-        min-width: unset;
+        width: 100% !important;
+        min-width: unset !important; /* CORRECCIÓN: Quitamos los 600px/350px que desbordan el móvil */
     }
     .columna-formulario {
         position: static;
     }
+    /* Tarjetas de resumen (Oficial/Extra) se apilan para que no se corten */
+    .tarjetas-resumen {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
+/* === FIN SECCIÓN CORREGIDA === */
+
 .filtros-fecha {
     display: flex;
     gap: 15px;
@@ -109,7 +116,7 @@
 .btn-filtro:hover {
     background: #a00000;
 }
-/* Contenedor de las tarjetas */
+
 .tarjetas-resumen {
     display: flex;
     gap: 20px;
@@ -125,17 +132,15 @@
     border: 1px solid rgba(0,0,0,0.05);
 }
 
-/* Colores de fondo suaves para que el negro resalte mejor */
-.oficial { background: #a9dfbf; } /* Verde suave */
-.extra { background: #f9e79f; }   /* Amarillo/Naranja suave */
-.total-caja { background: #aed6f1; } /* Azul suave */
+.oficial { background: #a9dfbf; } 
+.extra { background: #f9e79f; }   
+.total-caja { background: #aed6f1; } 
 
-/* Estilo de los dígitos */
 .card p { 
     font-size: 2.2em; 
     margin: 10px 0; 
-    font-weight: 800; /* Extra negrita */
-    color: #000000;   /* Negro puro */
+    font-weight: 800; 
+    color: #000000;   
 }
 
 .card h3 {
@@ -183,7 +188,7 @@
     margin-top: 10px;
 }
 .btn-pdf {
-    background-color: #e74c3c; /* Rojo elegante */
+    background-color: #e74c3c; 
     color: white;
     padding: 10px 20px;
     border: none;
@@ -200,7 +205,6 @@
     background-color: #c0392b;
 }
 
-/* Regla de oro: No imprimir el botón en el propio PDF */
 @media print {
     .btn-pdf, .btn-volver, header nav, .nav-container {
         display: none !important;

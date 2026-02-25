@@ -11,10 +11,10 @@ if ($is_localhost) {
     $db   = "cerrajeria_pinos"; // Nombre de tu base de datos local
 } else {
     // CONFIGURACIÓN PARA INFINITYFREE
-    $host = "sql307.epizy.com"; 
-    $user = "if0_41123910";
-    $pass = "g5EBDsqekmIOi"; // Tu contraseña de vPanel verificada
-    $db   = "if0_41123910_cerrajeria";
+    $host = "localhost"; 
+    $user = "multiserviciopin_admin_pinos";
+    $pass = "Daviluchocerrajero75."; // Tu contraseña de vPanel verificada
+    $db   = "multiserviciopin_gestion";
 }
 
 $conexion = mysqli_connect($host, $user, $pass, $db);

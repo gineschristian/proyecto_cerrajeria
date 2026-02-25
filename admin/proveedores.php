@@ -10,6 +10,10 @@ if (!isset($_SESSION['rol']) || strtolower(trim($_SESSION['rol'])) !== 'admin') 
 }
 
 include '../php/conexion.php';
+
+// Capturamos fechas si existen para el cálculo del Gastado Total
+$f_inicio = $_GET['inicio'] ?? '';
+$f_fin = $_GET['fin'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -20,11 +24,76 @@ include '../php/conexion.php';
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
+    <style>
+        header { 
+            background-color: #2c3e50 !important; 
+            padding: 10px 15px !important;
+            display: block !important;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-content h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            color: white; 
+        }
+
+        .logo-img { 
+            height: 40px; 
+            width: auto; 
+        }
+
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Estilo para el filtro de fechas */
+        .filtro-fechas-prov {
+            background: #fdf2e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #fad7a0;
+        }
+        .input-fecha { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <img src="../img/logo.png" alt="Logo" class="logo-img">
+            <a href="dashboard.php">
+                <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
+            </a>
             <h1>Proveedores</h1>
         </div>
         <nav class="nav-container">
@@ -67,6 +136,17 @@ include '../php/conexion.php';
         <section class="columna-tabla">
             <div class="table-card">
                 <h2>Mis Proveedores</h2>
+                
+                <div class="filtro-fechas-prov">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <label>Desde:</label>
+                        <input type="date" id="f_inicio" class="input-fecha" value="<?php echo $f_inicio; ?>">
+                        <label>Hasta:</label>
+                        <input type="date" id="f_fin" class="input-fecha" value="<?php echo $f_fin; ?>">
+                        <button onclick="actualizarVistaGastos()" style="background:#f39c12; color:white; border:none; padding:7px 12px; border-radius:4px; cursor:pointer;">🔍 Filtrar Sumas</button>
+                    </div>
+                </div>
+
                 <div class="tabla-scroll-vertical">
                     <table class="user-table">
                         <thead>
@@ -79,29 +159,34 @@ include '../php/conexion.php';
                         </thead>
                         <tbody>
                             <?php
-                            // Consulta que une Proveedores con la suma de sus Gastos
+                            // Preparamos el filtro SQL para el Gastado Total en la tabla
+                            $filtroSQL = "";
+                            if (!empty($f_inicio) && !empty($f_fin)) {
+                                $filtroSQL = " AND fecha BETWEEN '$f_inicio' AND '$f_fin'";
+                            }
+
                             $sql = "SELECT p.*, 
-                                   (SELECT SUM(monto) FROM gastos WHERE proveedor = p.nombre) as total_gastado 
+                                   (SELECT SUM(monto) FROM gastos WHERE proveedor = p.nombre $filtroSQL) as total_gastado 
                                    FROM proveedores p 
                                    ORDER BY p.nombre ASC";
                             
                             $resultado = mysqli_query($conexion, $sql);
 
                             while ($row = mysqli_fetch_assoc($resultado)) {
-                                $total_formateado = number_format($row['total_gastado'] ?? 0, 2);
-                                echo "<tr>
-                                    <td style='font-weight:bold;'>".htmlspecialchars($row['nombre'])."</td>
-                                    <td>".htmlspecialchars($row['cif'])."</td>
-                                    <td style='color:#c0392b; font-weight:bold;'>- {$total_formateado}€</td>
+                                $total_formateado = number_format($row['total_gastado'] ?? 0, 2, ',', '.');
+                                ?>
+                                <tr>
+                                    <td style='font-weight:bold;'><?php echo htmlspecialchars($row['nombre']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['cif']); ?></td>
+                                    <td style='color:#c0392b; font-weight:bold;'>- <?php echo $total_formateado; ?>€</td>
                                     <td>
                                         <div style='display:flex; gap:10px;'>
-                                            <a href='../php/gasto_proveedores.php?nombre=".urlencode($row['nombre'])."' class='btn-header' style='background:#3498db; font-size:0.7rem;'>👁️ Ver Historial</a>
-                                            <button onclick='eliminarProveedor({$row['id']})' style='background:none; border:none; cursor:pointer;'>🗑️</button>
+                                            <button onclick="verHistorialProveedor('<?php echo urlencode($row['nombre']); ?>')" class='btn-header' style='background:#3498db; font-size:0.7rem; border:none; cursor:pointer;'>👁️ Ver Historial</button>
+                                            <button onclick="eliminarProveedor(<?php echo $row['id']; ?>)" style='background:none; border:none; cursor:pointer;'>🗑️</button>
                                         </div>
                                     </td>
-                                </tr>";
-                            }
-                            ?>
+                                </tr>
+                            <?php } ?>
                         </tbody>
                     </table>
                 </div>
@@ -110,6 +195,22 @@ include '../php/conexion.php';
     </main>
 
     <script>
+    // Función para recargar la tabla principal aplicando el filtro a la columna "Gastado Total"
+    function actualizarVistaGastos() {
+        const inicio = document.getElementById('f_inicio').value;
+        const fin = document.getElementById('f_fin').value;
+        window.location.href = `proveedores.php?inicio=${inicio}&fin=${fin}`;
+    }
+
+    // Función para ir al historial filtrado
+    function verHistorialProveedor(nombre) {
+        const inicio = document.getElementById('f_inicio').value;
+        const fin = document.getElementById('f_fin').value;
+        let url = `../php/gasto_proveedores.php?nombre=${nombre}`;
+        if(inicio && fin) url += `&inicio=${inicio}&fin=${fin}`;
+        window.location.href = url;
+    }
+
     function eliminarProveedor(id) {
         if (confirm('¿Estás seguro? Se perderá el vínculo con los gastos registrados a este nombre.')) {
             window.location.href = '../php/eliminar_proveedor.php?id=' + id;

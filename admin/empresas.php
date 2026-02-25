@@ -1,7 +1,6 @@
 <?php
-header("Cache-Control: no-cache, must-revalidate"); // HTTP 1.1.
-header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Fecha en el pasado
-include '../php/conexion.php';
+header("Cache-Control: no-cache, must-revalidate");
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 include '../php/conexion.php';
 session_start();
 if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; }
@@ -24,47 +23,38 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
         .btn-eliminar:hover { background: #c0392b; }
         .alerta-exito { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
     
-     @media (max-width: 992px) {
-            .trabajos-container-dual {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                padding: 10px;
-            }
-            .columna-formulario, .columna-tabla {
-                width: 100% !important;
-            }
-            .header-tabla-dinamica {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 15px;
-            }
-        }
-        .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                padding: 15px;
-            }
-            .btn-header {
-                font-size: 0.8rem;
-                padding: 8px 12px;
-            }
-        }
+        header { background-color: #2c3e50 !important; padding: 10px 15px !important; display: block !important; }
+        .header-content { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; }
+        .header-content h1 { margin: 0; font-size: 1.5rem; color: white; }
+        .logo-img { height: 40px; width: auto; }
+        .nav-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
+        .btn-header { background: rgba(255, 255, 255, 0.1); color: white; text-decoration: none; padding: 8px 12px; border-radius: 5px; font-size: 0.85rem; font-weight: 500; transition: background 0.3s; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-header:hover { background: rgba(255, 255, 255, 0.2); }
 
-        </style>
+        /* --- Estilos para el nuevo Filtro de Facturación --- */
+        .filtro-facturacion {
+            background: #f1f4f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #dcdfe3;
+        }
+        .filtro-facturacion label { font-size: 0.85rem; font-weight: bold; color: #34495e; }
+        .input-fecha { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        @media (max-width: 992px) {
+            .grid-gestion { grid-template-columns: 1fr; }
+            .filtro-facturacion { flex-direction: column; align-items: stretch; }
+        }
+    </style>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <img src="../img/logo.png" alt="Logo" class="logo-img">
+            <a href="dashboard.php"><img src="../img/logo.png" alt="Logo" class="logo-img"></a>
             <h1>Empresas</h1>
         </div>
         <nav class="nav-container">
@@ -83,11 +73,8 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
     </header>
 
     <main class="container-empresas">
-        
         <?php if (isset($_GET['msj'])): ?>
-            <div class="alerta-exito">
-                ✅ <?php echo htmlspecialchars($_GET['msj']); ?>
-            </div>
+            <div class="alerta-exito">✅ <?php echo htmlspecialchars($_GET['msj']); ?></div>
         <?php endif; ?>
 
         <div class="grid-gestion">
@@ -111,7 +98,24 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
             </section>
 
             <section class="card">
-                <h3>Empresas Colaboradoras</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Empresas Colaboradoras</h3>
+                </div>
+
+                <div class="filtro-facturacion">
+                    <div>
+                        <label>Desde:</label>
+                        <input type="date" id="f_inicio" class="input-fecha">
+                    </div>
+                    <div>
+                        <label>Hasta:</label>
+                        <input type="date" id="f_fin" class="input-fecha">
+                    </div>
+                    <p style="margin: 0; font-size: 0.8rem; color: #7f8c8d; max-width: 250px;">
+                        Selecciona fechas para filtrar el total facturado al abrir la empresa.
+                    </p>
+                </div>
+
                 <table style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #f8f9fa;">
@@ -124,7 +128,6 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
                         <?php
                         $query = "SELECT * FROM empresas ORDER BY nombre ASC";
                         $res = mysqli_query($conexion, $query);
-                        
                         if(mysqli_num_rows($res) > 0){
                             while($emp = mysqli_fetch_assoc($res)):
                         ?>
@@ -136,18 +139,14 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
                             <td style="padding:12px;"><?php echo htmlspecialchars($emp['telefono'] ?: '---'); ?></td>
                             <td style="padding:12px; text-align:center;">
                                 <div style="display:flex; gap:8px; justify-content:center;">
-                                    <a href="../php/trabajo_empresas.php?nombre=<?php echo urlencode($emp['nombre']); ?>" class="btn-ver-trabajos">📂 Ver Trabajos</a>
-                                    
+                                    <button onclick="verTrabajosConFiltro('<?php echo urlencode($emp['nombre']); ?>')" class="btn-ver-trabajos" style="border:none; cursor:pointer;">📂 Ver Trabajos</button>
                                     <button onclick="eliminarEmpresa(<?php echo $emp['id']; ?>)" class="btn-eliminar">🗑️</button>
                                 </div>
                             </td>
                         </tr>
-                        <?php 
-                            endwhile; 
-                        } else {
+                        <?php endwhile; } else { ?>
                             echo "<tr><td colspan='3' style='text-align:center; padding:30px; color:#95a5a6;'>No hay empresas registradas.</td></tr>";
-                        }
-                        ?>
+                        <?php } ?>
                     </tbody>
                 </table>
             </section>
@@ -155,16 +154,28 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
     </main>
 
     <script>
+        // Función para enviar el nombre de la empresa y las fechas a la siguiente página
+        function verTrabajosConFiltro(nombreEmpresa) {
+            const inicio = document.getElementById('f_inicio').value;
+            const fin = document.getElementById('f_fin').value;
+            
+            // Construimos la URL. Si hay fechas, las pasamos por GET
+            let url = '../php/trabajo_empresas.php?nombre=' + nombreEmpresa;
+            if(inicio) url += '&inicio=' + inicio;
+            if(fin) url += '&fin=' + fin;
+            
+            window.location.href = url;
+        }
+
         function eliminarEmpresa(id) {
             if(confirm('¿Estás seguro? Se borrará la empresa de la lista, pero los trabajos realizados NO se borrarán.')) {
-                // RUTA CORREGIDA: sale de vistas/ y entra en php/
                 window.location.href = '../php/eliminar_empresa.php?id=' + id;
             }
         }
-        // Si acabamos de guardar, bajamos automáticamente al final de la tabla
-if (window.location.search.includes('msj=')) {
-    window.scrollTo(0, document.body.scrollHeight);
-}
+
+        if (window.location.search.includes('msj=')) {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
     </script>
 </body>
 </html>

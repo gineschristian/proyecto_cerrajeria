@@ -11,6 +11,13 @@ if (!isset($_SESSION['usuario_id'])) {
 $esAdmin = (isset($_SESSION['rol']) && strtolower(trim($_SESSION['rol'])) === 'admin');
 $id_usuario_actual = $_SESSION['usuario_id'];
 include '../php/conexion.php'; 
+
+// 1. Obtenemos lista de todos los usuarios para el filtro de suma (Admin)
+$usuarios_list_filtro = [];
+$res_u = mysqli_query($conexion, "SELECT id, nombre FROM usuarios ORDER BY nombre ASC");
+while($u = mysqli_fetch_assoc($res_u)) {
+    $usuarios_list_filtro[] = $u;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -20,16 +27,94 @@ include '../php/conexion.php';
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2c3e50">
     <title>Trabajos - Cerrajería Pinos</title>
-    <link rel="stylesheet" href="../css/main.css?v=1.2">
-    <link rel="stylesheet" href="../css/formularios.css?v=1.2">
-    <link rel="stylesheet" href="../css/trabajos_layout.css?v=1.2">
+    <link rel="stylesheet" href="../css/main.css?v=3.0">
+    <link rel="stylesheet" href="../css/formularios.css?v=3.0">
+    <link rel="stylesheet" href="../css/trabajos_layout.css?v=3.0">
     <style>
-        header { background-color: #2c3e50 !important; }
-        .trabajos-container-dual { display: flex; flex-wrap: wrap; gap: 20px; padding: 15px; box-sizing: border-box; }
-        .columna-formulario { flex: 1; min-width: 380px; max-width: 420px; }
-        .columna-tabla { flex: 2.5; min-width: 600px; }
+        /* --- ESTILO DEL HEADER --- */
+        header { 
+            background-color: #2c3e50 !important; 
+            padding: 10px 15px !important;
+            display: block !important;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-content h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            color: white; 
+        }
+
+        .logo-img { 
+            height: 40px; 
+            width: auto; 
+        }
+
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
         
-        /* --- DISEÑO DE TABLA PANTALLA --- */
+        /* --- ESTILO PARA EL TOTAL --- */
+        #resumenDinero {
+            margin-top: 15px;
+            padding: 15px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 8px;
+            text-align: right;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .trabajos-container-dual { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            padding: 15px; 
+            box-sizing: border-box; 
+            width: 100%;
+        }
+
+        .columna-formulario { 
+            flex: 1; 
+            min-width: 0; 
+            width: 100%;
+            max-width: 420px; 
+        }
+        
+        .columna-tabla { 
+            flex: 2.5; 
+            min-width: 0; 
+            width: 100%;
+        }
+        
         .table-card table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -43,11 +128,9 @@ include '../php/conexion.php';
         }
 
         .table-card tr:hover { background-color: #f8fbff; }
-        
         .col-fecha { width: 75px; }
-        .col-info { min-width: 250px; }
+        .col-info { min-width: 200px; }
         
-        /* ESTILO OPERARIO EN PANTALLA (Con diseño) */
         .col-operario div {
             background: #e8f4fd; 
             padding: 5px 10px; 
@@ -77,68 +160,78 @@ include '../php/conexion.php';
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background-color: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
 
-        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
+        /* --- ESTILO EXCLUSIVO PARA EL TÍTULO EN PDF --- */
+        .titulo-impresion {
+            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .columna-formulario, .columna-tabla {
+                min-width: 100% !important;
+                max-width: 100% !important;
+                flex: none !important;
+            }
+            .tabla-scroll-vertical {
+                overflow-x: auto !important;
+                width: 100% !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            table { min-width: 600px; }
+        }
+
+        /* --- CONFIGURACIÓN PARA EL PDF / IMPRESIÓN --- */
         @media print {
+            .titulo-impresion {
+                display: block !important;
+            }
+            .titulo-impresion h1 {
+                margin: 0;
+                font-size: 26pt;
+                color: #2c3e50;
+                text-transform: uppercase;
+            }
+            .titulo-impresion p {
+                margin: 5px 0;
+                font-size: 12pt;
+                border-bottom: 2px solid #2c3e50;
+                padding-bottom: 10px;
+            }
+
             header, .nav-container, .columna-formulario, .buscador-localidad-container, 
-            .header-tabla-dinamica, .col-accion, button, .btn-header, .logo-img {
+            #info-filtro, .header-tabla-dinamica, .col-accion, .btn-reset, 
+            .btn-print, .btn-lupa, button, .modal {
                 display: none !important;
             }
 
-            body {
-                background: white !important;
-                margin: 0 !important;
-                padding: 10px !important;
-                width: 100% !important;
-            }
-
-            .trabajos-container-dual { display: block !important; width: 100% !important; margin: 0 !important; }
-            .columna-tabla { width: 100% !important; max-width: 100% !important; margin: 0 !important; }
-
-            .columna-tabla::before {
-                content: "INFORME DE TRABAJOS REALIZADOS";
-                display: block;
-                text-align: center;
-                font-size: 16pt;
-                font-weight: bold;
-                margin-bottom: 15px;
-                border-bottom: 2px solid #000;
-                padding-bottom: 5px;
-            }
-
-            table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
-            th, td { border: 1px solid #333 !important; padding: 6px !important; font-size: 8.5pt !important; word-wrap: break-word !important; color: #000 !important; }
-            th { background-color: #f2f2f2 !important; }
-
-            /* ANULAR DISEÑO DE OPERARIO EN IMPRESIÓN */
-            .col-operario div {
-                background: transparent !important;
-                border: none !important;
-                padding: 0 !important;
-                color: #000 !important;
-                font-size: 8.5pt !important;
-                display: block !important;
-                font-weight: normal !important;
-            }
-
-            .col-fecha { width: 10% !important; }
-            .col-info { width: 50% !important; }
-            .col-operario { width: 15% !important; }
-            .col-factura { width: 10% !important; }
-            .col-total { width: 15% !important; text-align: right !important; }
-
-            #totalFacturado {
-                display: block !important;
-                font-size: 14pt !important;
-                font-weight: bold !important;
-                text-align: right !important;
-                margin-top: 15px;
-            }
+            body { background: white !important; margin: 0; padding: 0; }
+            .trabajos-container-dual { display: block !important; padding: 0 !important; }
+            .columna-tabla { width: 100% !important; max-width: 100% !important; flex: none !important; }
+            .table-card { box-shadow: none !important; border: none !important; }
             
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt !important; }
+            th { background-color: #f1f4f6 !important; color: black !important; border: 1px solid #ddd !important; -webkit-print-color-adjust: exact; }
+            td { border: 1px solid #ddd !important; padding: 8px !important; }
+
+            #resumenDinero {
+                background: #f1f4f6 !important;
+                color: black !important;
+                border: 2px solid #2c3e50 !important;
+                margin-top: 20px !important;
+                font-size: 14pt !important;
+                -webkit-print-color-adjust: exact;
+            }
+            tr { page-break-inside: avoid; }
         }
     </style>
 </head>
 <body>
+
+    <div class="titulo-impresion">
+        <h1>CERRAJERÍA PINOS</h1>
+        <p>Reporte de Trabajos Realizados - Fecha: <?php echo date('d/m/Y'); ?></p>
+    </div>
 
     <datalist id="listaProductos">
         <?php 
@@ -173,7 +266,9 @@ include '../php/conexion.php';
 
     <header>
         <div class="header-content">
-            <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
+            <a href="dashboard.php">
+                <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
+            </a>
             <h1>Trabajos</h1>
         </div>
         <nav class="nav-container">
@@ -238,8 +333,8 @@ include '../php/conexion.php';
         <section class="columna-tabla">
             <div class="table-card">
                 <div class="buscador-localidad-container">
-                    <input type="text" id="busquedaLocalidad" class="input-busqueda" placeholder="🔍 Buscar por localidad..." onkeyup="filtrarLocalidad()">
-                    <div id="info-filtro">📍 <span id="resumenFiltro">...</span></div>
+                    <input type="text" id="busquedaLocalidad" class="input-busqueda" placeholder="🔍 Buscar por localidad..." onkeyup="filtrarTrabajos()">
+                    <div id="info-filtro">📍 <span id="resumenFiltro">Resultados actuales</span></div>
                 </div>
 
                 <div class="header-tabla-dinamica" style="padding: 10px; background: #f8f9fa; border-bottom: 1px solid #eee;">
@@ -249,21 +344,20 @@ include '../php/conexion.php';
                         
                         <?php if ($esAdmin): ?>
                             <select id="filtroEmpleado" class="input-style-mini" style="flex:1; min-width: 150px; padding: 5px;">
-                                <option value="">-- Todos los Empleados --</option>
-                                <?php
-                                $res_emp_filtro = mysqli_query($conexion, "SELECT nombre FROM usuarios WHERE rol = 'empleado' ORDER BY nombre ASC");
-                                while($emp = mysqli_fetch_assoc($res_emp_filtro)) {
-                                    echo "<option value='".htmlspecialchars($emp['nombre'])."'>".htmlspecialchars($emp['nombre'])."</option>";
-                                }
-                                ?>
+                                <option value="todos">-- Todos los Empleados --</option>
+                                <?php foreach($usuarios_list_filtro as $u): ?>
+                                    <option value="<?php echo htmlspecialchars($u['nombre']); ?>">
+                                        <?php echo htmlspecialchars($u['nombre']); ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         <?php else: ?>
-                            <input type="hidden" id="filtroEmpleado" value="">
+                            <input type="hidden" id="filtroEmpleado" value="todos">
                         <?php endif; ?>
 
-                        <button type="button" onclick="filtrarTrabajos()" class="btn-lupa" style="padding: 5px 15px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">Filtrar</button>
+                        <button type="button" onclick="filtrarTrabajos()" class="btn-lupa" style="padding: 5px 15px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">Filtrar y Sumar</button>
                         <button type="button" onclick="limpiarTodosLosFiltros()" class="btn-reset" style="padding: 5px 10px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer;">Limpiar</button>
-                        <button type="button" onclick="window.print()" class="btn-print" style="padding: 5px 15px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📄 Imprimir PDF</button>
+                        <button type="button" onclick="window.print()" class="btn-print" style="padding: 5px 15px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📄 Imprimir</button>
                     </div>
                 </div>
 
@@ -285,6 +379,10 @@ include '../php/conexion.php';
                             <?php include '../php/obtener_trabajos.php'; ?>
                         </tbody>
                     </table>
+                </div>
+                
+                <div id="resumenDinero">
+                    <strong>Suma Total: </strong> <span id="sumaTotal">0.00</span>€
                 </div>
             </div>
         </section>
@@ -313,6 +411,58 @@ include '../php/conexion.php';
 
     <script src="../js/trabajos.js?v=<?php echo time(); ?>"></script>
     <script>
+        function filtrarTrabajos() {
+            const fInicio = document.getElementById('fechaInicio').value;
+            const fFin = document.getElementById('fechaFin').value;
+            const busquedaLoc = document.getElementById('busquedaLocalidad').value.toLowerCase();
+            const filtroEmp = document.getElementById('filtroEmpleado').value.toLowerCase();
+            
+            const filas = document.querySelectorAll('#cuerpoTablaTrabajos tr');
+            let sumaCaja = 0;
+
+            filas.forEach(fila => {
+                const fechaFila = fila.cells[0].innerText.trim();
+                const infoFila = fila.cells[1].innerText.toLowerCase();
+                
+                let empleadoFila = "todos";
+                let precioTexto = "0";
+
+                if (<?php echo $esAdmin ? 'true' : 'false'; ?>) {
+                    empleadoFila = fila.cells[2].innerText.toLowerCase();
+                    precioTexto = fila.cells[4].innerText;
+                } else {
+                    precioTexto = fila.cells[3].innerText;
+                }
+
+                const precioFila = parseFloat(precioTexto.replace('€', '').replace(/\./g, '').replace(',', '.')) || 0;
+                let mostrar = true;
+
+                if (fInicio && fechaFila < fInicio) mostrar = false;
+                if (fFin && fechaFila > fFin) mostrar = false;
+                if (busquedaLoc && !infoFila.includes(busquedaLoc)) mostrar = false;
+                if (filtroEmp !== 'todos' && !empleadoFila.includes(filtroEmp)) mostrar = false;
+
+                if (mostrar) {
+                    fila.style.display = '';
+                    sumaCaja += precioFila;
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+
+            document.getElementById('sumaTotal').innerText = sumaCaja.toLocaleString('es-ES', { minimumFractionDigits: 2 });
+        }
+
+        function limpiarTodosLosFiltros() {
+            document.getElementById('fechaInicio').value = '';
+            document.getElementById('fechaFin').value = '';
+            document.getElementById('busquedaLocalidad').value = '';
+            if (document.getElementById('filtroEmpleado')) document.getElementById('filtroEmpleado').value = 'todos';
+            filtrarTrabajos();
+        }
+
+        window.onload = filtrarTrabajos;
+
         function actualizarIdProducto(input) {
             const list = document.getElementById('listaProductos');
             const option = Array.from(list.options).find(opt => opt.value === input.value);

@@ -3,21 +3,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. Verificamos si existe la sesión
-if (!isset($_SESSION['usuario_id'])) {
+// 1. Verificación de Seguridad
+if (!isset($_SESSION['usuario_id']) || strtolower(trim($_SESSION['rol'] ?? '')) !== 'admin') {
     header("Location: ../index.html");
     exit();
 }
 
-// 2. Verificamos el rol
-$rol = isset($_SESSION['rol']) ? strtolower(trim($_SESSION['rol'])) : '';
-
-if ($rol !== 'admin') {
-    header("Location: dashboard.php?error=acceso_denegado");
-    exit();
-}
-
 include '../php/conexion.php'; 
+
+// --- CÁLCULO DE TOTALES PARA EVITAR SALTO VISUAL ---
+$total_a = 0;
+$total_b = 0;
+
+$res_a = mysqli_query($conexion, "SELECT SUM(precio_total) as total FROM trabajos");
+$row_a = mysqli_fetch_assoc($res_a);
+$total_a = $row_a['total'] ?? 0;
+
+$res_b = mysqli_query($conexion, "SELECT SUM(monto) as total FROM ingresos_b");
+$row_b = mysqli_fetch_assoc($res_b);
+$total_b = $row_b['total'] ?? 0;
+
+$total_general = $total_a + $total_b;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -32,6 +38,54 @@ include '../php/conexion.php';
     <link rel="stylesheet" href="../css/trabajos_layout.css"> 
     <style>
         /* Ajustes Web */
+        header { 
+            background-color: #2c3e50 !important; 
+            padding: 10px 15px !important;
+            display: block !important;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-content h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            color: white; 
+        }
+
+        .logo-img { 
+            height: 40px; 
+            width: auto; 
+        }
+
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
         @media (max-width: 768px) {
             .tarjetas-resumen { flex-direction: column !important; }
             .header-tabla-dinamica { flex-direction: column; gap: 15px; }
@@ -102,7 +156,9 @@ include '../php/conexion.php';
 
     <header>
         <div class="header-content">
+            <a href="dashboard.php">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
+            </a>
             <h1>Ingresos</h1>
         </div>
         <nav class="nav-container">
@@ -124,17 +180,17 @@ include '../php/conexion.php';
         <div class="tarjetas-resumen">
             <div class="card oficial">
                 <h3>Facturación (A)</h3>
-                <p id="totalOficial">0.00€</p>
+                <p id="totalOficial"><?php echo number_format($total_a, 2, ',', '.'); ?>€</p>
                 <small>Legal / Con IVA</small>
             </div>
             <div class="card extra">
                 <h3>Extras (B)</h3>
-                <p id="totalB">0.00€</p>
+                <p id="totalB"><?php echo number_format($total_b, 2, ',', '.'); ?>€</p>
                 <small>Caja B / Sin Factura</small>
             </div>
             <div class="card total-caja">
                 <h3>Caja Total</h3>
-                <p id="totalGeneral">0.00€</p>
+                <p id="totalGeneral"><?php echo number_format($total_general, 2, ',', '.'); ?>€</p>
                 <small>Efectivo + Banco</small>
             </div>
         </div>
@@ -145,7 +201,7 @@ include '../php/conexion.php';
                 <div class="filtros-fecha" style="display:flex; gap:8px;">
                     <input type="date" id="fechaInicio" class="input-style-mini">
                     <input type="date" id="fechaFin" class="input-style-mini">
-                    <button onclick="filtrarIngresos()" class="btn-filtro" style="padding: 8px 15px; background: var(--rojo-principal); color: white; border: none; border-radius: 5px; cursor: pointer;">Filtrar</button>
+                    <button onclick="filtrarIngresos()" class="btn-filtro" style="padding: 8px 15px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Filtrar</button>
                     <button onclick="limpiarFiltroIngresos()" class="btn-reset" style="padding: 8px 15px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">Reset</button>
                     <button onclick="window.print()" class="btn-pdf">📄 PDF</button>
                 </div>

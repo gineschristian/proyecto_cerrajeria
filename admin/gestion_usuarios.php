@@ -37,6 +37,54 @@ include '../php/conexion.php';
     <link rel="stylesheet" href="../css/usuarios.css"> 
     <style>
         /* Ajuste extra para que el menú con tantos enlaces no se rompa en móvil */
+        header { 
+            background-color: #2c3e50 !important; 
+            padding: 10px 15px !important;
+            display: block !important;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-content h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            color: white; 
+        }
+
+        .logo-img { 
+            height: 40px; 
+            width: auto; 
+        }
+
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
         .nav-container {
             display: flex;
             flex-wrap: wrap;
@@ -59,7 +107,9 @@ include '../php/conexion.php';
 <body>
     <header>
         <div class="header-content">
-            <img src="../img/logo.png" alt="Logo Cerrajería Pinos" class="logo-img">
+            <a href="dashboard.php">
+            <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
+            </a>
             <h1>Gestión de Personal</h1>
         </div>
         <nav class="nav-container">

@@ -470,6 +470,24 @@ header h1 {
 
 /* --- SECCIÓN CORREGIDA: RESPONSIVE SOLO TABLAS --- */
 @media (max-width: 768px) {
+    /* --- INICIO CAMBIO PARA MENÚ --- */
+    .nav-container {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        padding: 10px !important;
+    }
+
+    .btn-header {
+        flex: 1 1 45% !important; /* Dos botones por fila */
+        min-width: 120px !important;
+        font-size: 0.8rem !important;
+        padding: 10px 5px !important;
+        text-align: center !important;
+    }
+    /* --- FIN CAMBIO PARA MENÚ --- */
+
     /* Escondemos los encabezados de las tablas originales */
     #tablaStock thead, .user-table thead {
         display: none;
@@ -520,6 +538,7 @@ header h1 {
         touch-action: manipulation;
     }
 }
+
 .btn-pdf {
     background-color: #e74c3c; /* Rojo elegante */
     color: white;

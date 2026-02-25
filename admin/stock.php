@@ -21,6 +21,13 @@ $res_u = mysqli_query($conexion, "SELECT id, nombre FROM usuarios ORDER BY id AS
 while($u = mysqli_fetch_assoc($res_u)) {
     $usuarios_list[] = $u;
 }
+
+// 5. NUEVO: Obtener categorías de la base de datos
+$categorias_list = [];
+$res_c = mysqli_query($conexion, "SELECT * FROM categorias_stock ORDER BY nombre ASC");
+while($c = mysqli_fetch_assoc($res_c)) {
+    $categorias_list[] = $c;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -33,22 +40,85 @@ while($u = mysqli_fetch_assoc($res_u)) {
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <style>
-        .nav-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+        /* --- ESTILOS MANTENIDOS --- */
+        header { 
+            background-color: #2c3e50 !important; 
+            padding: 10px 15px !important;
+            display: block !important;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-content h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            color: white; 
+        }
+
+        .logo-img { 
+            height: 40px; 
+            width: auto; 
+        }
+
+        .nav-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-header:hover { background: rgba(255, 255, 255, 0.2); }
+        .btn-cerrar-header { background: #e74c3c !important; border: 1px solid #c0392b !important; }
+
+        @media (min-width: 768px) {
+            .header-content { flex-direction: row; gap: 20px; }
+            .nav-container { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+        }
+
         .filter-container { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
         .btn-filter { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: transform 0.2s; font-size: 0.9rem; }
         .btn-filter:active { transform: scale(0.95); }
         .grid-stock { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+        
         @media (max-width: 768px) {
-            header { flex-direction: column; padding: 15px; }
-            .btn-header { font-size: 0.8rem; padding: 8px 12px; }
             .btn-filter { flex: 1; min-width: 110px; }
+        }
+
+        /* Estilo para el mini-formulario de categorías */
+        .admin-tools {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px dashed #2980b9;
         }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
+            <a href="dashboard.php">
             <img src="../img/logo.png" alt="Logo Cerrajeria Pinos" class="logo-img">
+            </a>
             <h1>Stock</h1>
         </div>
         <nav class="nav-container">
@@ -58,13 +128,13 @@ while($u = mysqli_fetch_assoc($res_u)) {
             <?php if ($esAdmin): ?>
                 <a href="ingresos.php" class="btn-header">💰 Ingresos</a>
                 <a href="gastos.php" class="btn-header">💸 Gastos</a>
-                <a href="gestion_usuarios.php" class="btn-header">👥 Empleados </a>
+                <a href="gestion_usuarios.php" class="btn-header">👥 Empleados</a>
                 <a href="impuestos.php" class="btn-header">📊 Impuestos</a>
                 <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
-                <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
-                <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+                <a href="empresas.php" class="btn-header">🏢 Empresas</a>
+                <a href="proveedores.php" class="btn-header">🚚 Proveedores</a>
             <?php endif; ?>
-            <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
+            <a href="../php/logout.php" class="btn-header btn-cerrar-header">🚪 Salir</a>
         </nav>
     </header>
 
@@ -82,17 +152,39 @@ while($u = mysqli_fetch_assoc($res_u)) {
 
     <main class="stock-container">        
         <?php if ($esAdmin): ?>
+        <section class="admin-tools">
+            <h3 style="margin-top:0; color:#2980b9;">Gestionar Categorías</h3>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <input type="text" id="nuevaCategoriaNombre" placeholder="Nombre de nueva categoría..." class="input-style" style="flex: 1; margin-bottom:0;">
+                <button onclick="guardarNuevaCategoria()" class="btn-guardar" style="margin-top:0; background:#27ae60;">+ Añadir</button>
+            </div>
+
+            <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <label style="font-size: 0.8rem; color: #7f8c8d; display: block; margin-bottom: 5px;">Categorías actuales (Clic en el nombre para editar):</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    <?php foreach($categorias_list as $cat): ?>
+                        <span style="background: #ebf5fb; border: 1px solid #bdc3c7; padding: 2px 8px; border-radius: 15px; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                            <span onclick="editarCategoria(<?php echo $cat['id']; ?>, '<?php echo $cat['nombre']; ?>')" style="cursor: pointer; font-weight: 500;">
+                                <?php echo $cat['nombre']; ?> ✏️
+                            </span>
+                            <button onclick="eliminarCategoria(<?php echo $cat['id']; ?>, '<?php echo $cat['nombre']; ?>')" style="border: none; background: none; color: #e74c3c; cursor: pointer; font-weight: bold; padding: 0 2px;">&times;</button>
+                        </span>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </section>
+
         <section class="card-formulario">
             <h2>Añadir Nuevo Material</h2>
             <form id="formProducto" class="mi-formulario">
                 <div class="input-group">
                     <label>Categoría</label>
-                    <select name="categoria" class="input-style" required>
-                        <option value="Bombines">Bombines</option>
-                        <option value="Cerraduras">Cerraduras</option>
-                        <option value="Escudos">Escudos</option>
-                        <option value="Herramientas">Herramientas</option>
-                        <option value="Mandos">Mandos</option>
+                    <select name="categoria" id="selectCategoriaPrincipal" class="input-style" required>
+                        <option value="">Seleccione una categoría...</option>
+                        <?php foreach($categorias_list as $cat): ?>
+                            <option value="<?php echo $cat['nombre']; ?>"><?php echo $cat['nombre']; ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="input-group">
@@ -151,11 +243,9 @@ while($u = mysqli_fetch_assoc($res_u)) {
                 <div class="input-group">
                     <label>Categoría</label>
                     <select name="categoria" id="edit_categoria" class="input-style">
-                        <option value="Bombines">Bombines</option>
-                        <option value="Cerraduras">Cerraduras</option>
-                        <option value="Escudos">Escudos</option>
-                        <option value="Herramientas">Herramientas</option>
-                        <option value="Mandos">Mandos</option>
+                        <?php foreach($categorias_list as $cat): ?>
+                            <option value="<?php echo $cat['nombre']; ?>"><?php echo $cat['nombre']; ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -189,5 +279,9 @@ while($u = mysqli_fetch_assoc($res_u)) {
     </aside>
 
     <script src="../js/stock.js"></script>
+    <script>
+        // No he añadido lógica aquí porque ya la tienes en el stock.js centralizado. 
+        // Solo asegúrate de tener las funciones editarCategoria() y guardarNuevaCategoria() en tu archivo .js
+    </script>
 </body>
 </html>

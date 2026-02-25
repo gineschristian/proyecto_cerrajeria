@@ -1,7 +1,7 @@
 <?php
 ob_start(); 
 session_start();
-include 'conexion.php';
+include 'conexion.php'; // Verifica que este archivo tenga los datos de Sered
 
 $user = isset($_POST['usuario']) ? trim($_POST['usuario']) : '';
 $pass = isset($_POST['password']) ? trim($_POST['password']) : '';
@@ -18,24 +18,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (password_verify($pass, $fila['password'])) {
                 $_SESSION['usuario_id'] = $fila['id'];
                 $_SESSION['nombre'] = $fila['nombre'];
-                
-                // --- LÍNEA CLAVE AÑADIDA ---
-                // Guardamos el rol de la base de datos en la sesión
                 $_SESSION['rol'] = $fila['rol']; 
                 
-                // RUTA CORREGIDA: 
-                // Antes tenías ../admin/dashboard.php, pero tu archivo está en la raíz del proyecto
+                // REDIRECCIÓN TRAS LOGIN ÉXITOSO
                 header("Location: ../admin/dashboard.php");
                 exit();
             } else {
-                echo "Contraseña incorrecta.";
+                echo "Contraseña incorrecta. <a href='../index.php'>Volver</a>";
             }
         } else {
-            echo "Usuario no encontrado.";
+            echo "Usuario no encontrado. <a href='../index.php'>Volver</a>";
         }
     }
 } else {
-    header("Location: ../../index.html");
+    // Si intentan entrar a auth.php sin POST, los mandamos al inicio del proyecto
+    header("Location: ../index.php");
     exit();
 }
 ob_end_flush();
