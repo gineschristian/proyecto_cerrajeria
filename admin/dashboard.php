@@ -218,6 +218,15 @@ $esAdmin = ($_SESSION['rol'] === 'admin');
                     Gestionar
                 </a>
             </div>
+            <div class="card" style="border-top: 5px solid #0eb2e4;">
+                <div class="card-icon" style="font-size: 2.5rem; margin-bottom: 10px;">🗂️</div>
+                <h3>Clientes</h3>
+                <p>Clientes Particulares</p>
+                <a href="clientes.php" class="btn-acceder" style="background: #34495e; color: white;">
+                    Gestionar
+                </a>
+            </div>
+</a>
         <?php endif; ?>
 
     </main>

@@ -147,6 +147,7 @@ while($c = mysqli_fetch_assoc($res_c)) {
                 <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
                 <a href="empresas.php" class="btn-header">🏢 Empresas</a>
                 <a href="proveedores.php" class="btn-header">🚚 Proveedores</a>
+                <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <?php endif; ?>
             <a href="../php/logout.php" class="btn-header btn-cerrar-header">🚪 Salir</a>
         </nav>
@@ -206,7 +207,7 @@ while($c = mysqli_fetch_assoc($res_c)) {
                     <input type="text" id="nombre" name="nombre" placeholder="Ej: Cerradura FAC" required>
                 </div>
                 <div class="input-group">
-                    <label for="cantidad">Cantidad Initial (Almacén)</label>
+                    <label for="cantidad">Cantidad Inicial (Almacén)</label>
                     <input type="number" id="cantidad" name="cantidad" placeholder="0" required>
                 </div>
                 <div class="input-group">

@@ -9,9 +9,8 @@ $esAdmin = (isset($_SESSION['rol']) && strtolower(trim($_SESSION['rol'])) === 'a
 
 $inicio = $_GET['inicio'] ?? '';
 $fin = $_GET['fin'] ?? '';
-$empleadoFiltro = $_GET['empleado'] ?? ''; // NUEVO: Capturamos el nombre del empleado
+$empleadoFiltro = $_GET['empleado'] ?? ''; 
 
-// Consulta para traer los datos y el nombre del empleado
 $query = "SELECT t.*, u.nombre as nombre_empleado,
           GROUP_CONCAT(CONCAT(p.nombre, ' (', tm.cantidad, ')') SEPARATOR ', ') AS materiales_lista
           FROM trabajos t 
@@ -21,19 +20,16 @@ $query = "SELECT t.*, u.nombre as nombre_empleado,
 
 $condiciones = [];
 
-// 1. Si no es admin, solo ve sus propios trabajos
 if (!$esAdmin) {
     $condiciones[] = "t.usuario_id = '$usuario_id_sesion'";
 }
 
-// 2. Filtro por fechas
 if (!empty($inicio) && !empty($fin)) {
     $inicioClean = mysqli_real_escape_string($conexion, $inicio);
     $finClean = mysqli_real_escape_string($conexion, $fin);
     $condiciones[] = "t.fecha BETWEEN '$inicioClean 00:00:00' AND '$finClean 23:59:59'";
 }
 
-// 3. NUEVO: Filtro por nombre de empleado (solo si viene en la URL y es admin)
 if (!empty($empleadoFiltro) && $esAdmin) {
     $empleadoClean = mysqli_real_escape_string($conexion, $empleadoFiltro);
     $condiciones[] = "u.nombre = '$empleadoClean'";
@@ -49,7 +45,6 @@ $resultado = mysqli_query($conexion, $query);
 $sumaTotal = 0;
 $filasHTML = "";
 
-// Colspan dinámico para el mensaje de "No hay resultados"
 $totalColumnas = $esAdmin ? 6 : 5;
 
 if ($resultado && mysqli_num_rows($resultado) > 0) {
@@ -58,11 +53,13 @@ if ($resultado && mysqli_num_rows($resultado) > 0) {
         
         $datosJSON = htmlspecialchars(json_encode($fila, JSON_HEX_QUOT | JSON_HEX_APOS), ENT_QUOTES, 'UTF-8');
         
+        // --- CORRECCIÓN: Generamos la fecha limpia para el atributo data ---
+        $fechaLimpiaParaJS = date("d/m/Y", strtotime($fila['fecha']));
+        
         $iconoFactura = ($fila['factura'] == 1) 
             ? "<div style='color: #27ae60; font-weight: bold; font-size: 0.75rem; border: 1.5px solid #27ae60; padding: 2px 6px; border-radius: 4px; display: inline-block; background: #ebf9f1;'>SÍ</div>" 
             : "<div style='color: #bdc3c7; font-weight: bold; font-size: 0.75rem; border: 1.5px solid #bdc3c7; padding: 2px 4px; border-radius: 4px; display: inline-block;'>NO</div>";
 
-        // Bloque de información del cliente
         $htmlInfo = "<div style='display: flex; flex-direction: column; gap: 3px;'>";
             if(!empty($fila['nombre_cliente'])){
                 $htmlInfo .= "<div style='font-weight: 700; color: #2c3e50; font-size: 0.95rem;'>" . strtoupper(htmlspecialchars($fila['nombre_cliente'])) . "</div>";
@@ -75,14 +72,14 @@ if ($resultado && mysqli_num_rows($resultado) > 0) {
             }
         $htmlInfo .= "</div>";
 
+        // --- CORRECCIÓN: Se añade el atributo data-fec con la fecha estandarizada ---
         $filasHTML .= "<tr>
-            <td class='col-fecha' style='vertical-align: middle; font-size: 0.85rem;'>
+            <td class='col-fecha' data-fec='{$fechaLimpiaParaJS}' style='vertical-align: middle; font-size: 0.85rem;'>
                 <span style='display:block; font-weight:800;'>" . date("d/m", strtotime($fila['fecha'])) . "</span>
                 <small style='color:#95a5a6;'>" . date("Y", strtotime($fila['fecha'])) . "</small>
             </td>
             <td class='col-info' style='border-left: 1px solid #f1f1f1;'>$htmlInfo</td>";
 
-        // COLUMNA OPERARIO (Solo si es Admin)
         if ($esAdmin) {
             $nombreOp = htmlspecialchars($fila['nombre_empleado'] ?? '---');
             $filasHTML .= "<td class='col-operario' style='vertical-align: middle;'>
@@ -112,7 +109,6 @@ if ($resultado && mysqli_num_rows($resultado) > 0) {
 
 echo $filasHTML;
 
-// Actualización del total en el pie de página o dashboard
 echo "<script>
     if(document.getElementById('totalFacturado')) { 
         document.getElementById('totalFacturado').innerText = '" . number_format($sumaTotal, 2, ',', '.') . "€'; 

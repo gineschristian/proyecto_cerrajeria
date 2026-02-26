@@ -212,6 +212,7 @@ $acumulado_b = $row_total['total'] ?? 0;
             <a href="gastos.php" class="btn-header" > 💸 Gastos</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+            <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>

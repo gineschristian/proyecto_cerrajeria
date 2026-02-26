@@ -67,6 +67,17 @@ if ($res && mysqli_num_rows($res) > 0) {
         }
         .container { padding: 30px; max-width: 1000px; margin: auto; }
         
+        /* Estilos para la cabecera de impresión (Nueva sección) */
+        .print-header {
+            display: none; /* Se oculta en web, se muestra en print */
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .print-header .item { display: flex; align-items: center; gap: 8px; }
+        .print-header .label { font-weight: bold; color: #7f8c8d; font-size: 1.1rem; }
+        .print-header .date { color: #bdc3c7; font-size: 0.9rem; }
+
         /* Tarjeta del Total */
         .card-total {
             background: white;
@@ -78,7 +89,6 @@ if ($res && mysqli_num_rows($res) > 0) {
         }
         .card-total h2 { margin: 0; color: #333; font-size: 1.5rem; text-transform: uppercase; }
         .card-total p { margin: 5px 0; color: #888; font-weight: bold; font-size: 0.9rem; }
-        /* Cambiado a rojo para simbolizar GASTO */
         .monto-grande { color: #e74c3c; font-size: 3rem; font-weight: 800; margin-top: 10px; }
 
         /* Tarjeta de la Tabla */
@@ -129,6 +139,9 @@ if ($res && mysqli_num_rows($res) > 0) {
             header, .btn-pdf, .btn-volver {
                 display: none !important;
             }
+            .print-header {
+                display: flex !important; /* Mostramos la cabecera al imprimir */
+            }
             body { background: white; }
             .container { padding: 0; max-width: 100%; }
             .card-total, .card-tabla { box-shadow: none; border: 1px solid #eee; }
@@ -154,6 +167,20 @@ if ($res && mysqli_num_rows($res) > 0) {
 </header>
 
 <div class="container">
+
+    <div class="print-header">
+        <div class="item">
+            <span style="font-size:1.5rem; color:#f39c12;">📁</span>
+            <span class="label">Proveedor: <?php echo strtoupper(htmlspecialchars($proveedor_nom)); ?></span>
+        </div>
+        <?php if(!empty($inicio)): ?>
+        <div class="item">
+            <span style="font-size:1.2rem;">📅</span>
+            <span class="date"><?php echo date('d/m/Y', strtotime($inicio)); ?> al <?php echo date('d/m/Y', strtotime($fin)); ?></span>
+        </div>
+        <?php endif; ?>
+    </div>
+
     <div class="card-total">
         <h2>Gastos en este periodo</h2>
         <p>TOTAL FACTURADO:</p>

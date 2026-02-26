@@ -243,9 +243,14 @@ while($u = mysqli_fetch_assoc($res_u)) {
 <body>
 
     <div class="titulo-impresion">
-        <h1>CERRAJERÍA PINOS</h1>
-        <p>Reporte de Trabajos Realizados - Fecha: <?php echo date('d/m/Y'); ?></p>
+    <h1>CERRAJERÍA PINOS</h1>
+    <p>Reporte de Trabajos Realizados - Fecha de impresión: <?php echo date('d/m/Y'); ?></p>
+    
+    <div id="filtros-reporte-print" style="margin-top: 10px; font-size: 14pt; font-weight: bold; color: #34495e;">
+        <span id="txtFiltroEmpleado"></span> 
+        <span id="txtFiltroFechas"></span>
     </div>
+</div>
 
     <datalist id="listaProductos">
         <?php 
@@ -296,6 +301,8 @@ while($u = mysqli_fetch_assoc($res_u)) {
                 <a href="impuestos.php" class="btn-header">📊 Impuestos</a>
                 <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
                 <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
+                <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+                <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <?php endif; ?>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
@@ -311,17 +318,19 @@ while($u = mysqli_fetch_assoc($res_u)) {
                         <div class="input-group"><label>Localidad <strong>*</strong></label><input type="text" name="localidad" placeholder="Ej: Lorca" required></div>
                     </div>
                     <div class="input-group">
-                        <label>Empresa / Cliente</label>
-                        <select name="nombre_cliente" id="nombre_cliente" class="input-style">
-                            <option value="">-- Cliente Particular --</option>
-                            <?php
-                            $res_emp = mysqli_query($conexion, "SELECT nombre FROM empresas ORDER BY nombre ASC");
-                            while($e = mysqli_fetch_assoc($res_emp)) {
-                                echo "<option value='".htmlspecialchars($e['nombre'])."'>".htmlspecialchars($e['nombre'])."</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
+    <label>Empresa / Cliente Particular <strong>*</strong></label>
+    <input type="text" name="nombre_cliente" id="nombre_cliente" list="listaEmpresas" class="input-style" placeholder="Seleccione empresa o escriba nombre del cliente..." required>
+    
+    <datalist id="listaEmpresas">
+        <?php
+        // Traemos las empresas de siempre para que sigan apareciendo como sugerencias
+        $res_emp = mysqli_query($conexion, "SELECT nombre FROM empresas ORDER BY nombre ASC");
+        while($e = mysqli_fetch_assoc($res_emp)) {
+            echo "<option value='".htmlspecialchars($e['nombre'])."'>";
+        }
+        ?>
+    </datalist>
+</div>
                     <div class="input-group"><label>Dirección <strong>*</strong></label><input type="text" name="cliente" placeholder="Calle, número, piso..." required></div>
                     <div class="input-group"><label>Descripción</label><textarea name="description" placeholder="¿Qué se ha hecho?" rows="2"></textarea></div>
                     <div class="zona-material">
@@ -426,46 +435,85 @@ while($u = mysqli_fetch_assoc($res_u)) {
     <script src="../js/trabajos.js?v=<?php echo time(); ?>"></script>
     <script>
         function filtrarTrabajos() {
-            const fInicio = document.getElementById('fechaInicio').value;
-            const fFin = document.getElementById('fechaFin').value;
-            const busquedaLoc = document.getElementById('busquedaLocalidad').value.toLowerCase();
-            const filtroEmp = document.getElementById('filtroEmpleado').value.toLowerCase();
-            
-            const filas = document.querySelectorAll('#cuerpoTablaTrabajos tr');
-            let sumaCaja = 0;
+    const fInicio = document.getElementById('fechaInicio').value; 
+    const fFin = document.getElementById('fechaFin').value;       
+    const busquedaLoc = document.getElementById('busquedaLocalidad').value.toLowerCase().trim();
+    const filtroEmp = document.getElementById('filtroEmpleado').value.toLowerCase().trim();
+    
+    const filas = document.querySelectorAll('#cuerpoTablaTrabajos tr');
+    let sumaCaja = 0;
 
-            filas.forEach(fila => {
-                const fechaFila = fila.cells[0].innerText.trim();
-                const infoFila = fila.cells[1].innerText.toLowerCase();
-                
-                let empleadoFila = "todos";
-                let precioTexto = "0";
-
-                if (<?php echo $esAdmin ? 'true' : 'false'; ?>) {
-                    empleadoFila = fila.cells[2].innerText.toLowerCase();
-                    precioTexto = fila.cells[4].innerText;
-                } else {
-                    precioTexto = fila.cells[3].innerText;
-                }
-
-                const precioFila = parseFloat(precioTexto.replace('€', '').replace(/\./g, '').replace(',', '.')) || 0;
-                let mostrar = true;
-
-                if (fInicio && fechaFila < fInicio) mostrar = false;
-                if (fFin && fechaFila > fFin) mostrar = false;
-                if (busquedaLoc && !infoFila.includes(busquedaLoc)) mostrar = false;
-                if (filtroEmp !== 'todos' && !empleadoFila.includes(filtroEmp)) mostrar = false;
-
-                if (mostrar) {
-                    fila.style.display = '';
-                    sumaCaja += precioFila;
-                } else {
-                    fila.style.display = 'none';
-                }
-            });
-
-            document.getElementById('sumaTotal').innerText = sumaCaja.toLocaleString('es-ES', { minimumFractionDigits: 2 });
+    filas.forEach(fila => {
+        // LEER LA FECHA DESDE EL ATRIBUTO DATA-FEC
+        const celdaFecha = fila.cells[0];
+        const fechaTextoFila = celdaFecha.getAttribute('data-fec') || ""; 
+        
+        let fechaConvertida = "";
+        const partes = fechaTextoFila.split('/');
+        if (partes.length === 3) {
+            // Convertimos DD/MM/YYYY a YYYY-MM-DD
+            fechaConvertida = `${partes[2]}-${partes[1]}-${partes[0]}`;
         }
+
+        const infoFila = fila.cells[1].innerText.toLowerCase();
+        let empleadoFila = "todos";
+        let precioTexto = "0";
+
+        // Ajuste de columnas según rol
+        if (<?php echo $esAdmin ? 'true' : 'false'; ?>) {
+            empleadoFila = fila.cells[2] ? fila.cells[2].innerText.toLowerCase().trim() : "";
+            precioTexto = fila.cells[4] ? fila.cells[4].innerText : "0";
+        } else {
+            precioTexto = fila.cells[3] ? fila.cells[3].innerText : "0";
+        }
+
+        let mostrar = true;
+
+        // Lógica de filtros
+        if (fInicio && fechaConvertida < fInicio) mostrar = false;
+        if (fFin && fechaConvertida > fFin) mostrar = false;
+        if (busquedaLoc && !infoFila.includes(busquedaLoc)) mostrar = false;
+        
+        // El filtro de empleado debe buscar el nombre dentro del texto del badge
+        if (filtroEmp !== 'todos' && !empleadoFila.includes(filtroEmp)) mostrar = false;
+
+        if (mostrar) {
+            fila.style.display = '';
+            // Limpiar precio para sumar: quita €, puntos de mil y cambia coma por punto
+            const precioLimpio = precioTexto.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+            sumaCaja += parseFloat(precioLimpio) || 0;
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+// ... (dentro de filtrarTrabajos, al final)
+
+// Actualizar textos para la impresión
+const txtEmp = document.getElementById('txtFiltroEmpleado');
+const txtFec = document.getElementById('txtFiltroFechas');
+const selectorEmp = document.getElementById('filtroEmpleado');
+
+// Texto del empleado
+if (selectorEmp && selectorEmp.value !== 'todos') {
+    txtEmp.innerText = "Empleado: " + selectorEmp.options[selectorEmp.selectedIndex].text + " | ";
+} else {
+    txtEmp.innerText = "Todos los empleados | ";
+}
+
+// Texto de fechas
+if (fInicio || fFin) {
+    const dInicio = fInicio ? fInicio.split('-').reverse().join('/') : '...';
+    const dFin = fFin ? fFin.split('-').reverse().join('/') : '...';
+    txtFec.innerText = "Periodo: " + dInicio + " al " + dFin;
+} else {
+    txtFec.innerText = "Periodo: Histórico completo";
+}
+    // Actualizar el total visual
+    document.getElementById('sumaTotal').innerText = sumaCaja.toLocaleString('es-ES', { 
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2 
+    });
+}
 
         function limpiarTodosLosFiltros() {
             document.getElementById('fechaInicio').value = '';

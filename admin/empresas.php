@@ -21,7 +21,7 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('../sw.js')
-            .then(reg => console.log('PWA detectada en Empresas'))
+            .then(reg => console.log('PWA lista:', reg.scope))
             .catch(err => console.error('Error PWA:', err));
         });
       }
@@ -85,6 +85,7 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
             <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+            <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>

@@ -39,8 +39,8 @@ include '../php/conexion.php';
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('../sw.js')
-            .then(reg => console.log('PWA lista en Gestión de Usuarios'))
-            .catch(err => console.error('Error PWA Usuarios:', err));
+            .then(reg => console.log('PWA lista:', reg.scope))
+            .catch(err => console.error('Error PWA:', err));
         });
       }
     </script>
@@ -137,6 +137,7 @@ include '../php/conexion.php';
             <a href="plantillas.php"class="btn-header">🗒️ Plantillas</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+            <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>

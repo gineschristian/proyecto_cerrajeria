@@ -39,8 +39,8 @@ $res_prov = mysqli_query($conexion, $query_prov);
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('../sw.js')
-            .then(reg => console.log('PWA lista en Gastos'))
-            .catch(err => console.error('Error PWA Gastos:', err));
+            .then(reg => console.log('PWA lista:', reg.scope))
+            .catch(err => console.error('Error PWA:', err));
         });
       }
     </script>
@@ -203,6 +203,7 @@ $res_prov = mysqli_query($conexion, $query_prov);
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+            <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>

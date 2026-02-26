@@ -186,6 +186,7 @@ include '../php/conexion.php';
             <a href="plantillas.php" class="btn-header">🗒️ Plantillas</a>
             <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
             <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+            <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>
         </nav>
     </header>

@@ -10,8 +10,8 @@ if (!isset($_SESSION['rol']) || strtolower(trim($_SESSION['rol'])) !== 'admin') 
 
 // 2. Obtención de datos
 $nombre_emp = $_GET['nombre'] ?? '';
-$inicio = $_GET['inicio'] ?? ''; // NUEVO: Fecha inicio
-$fin = $_GET['fin'] ?? '';       // NUEVO: Fecha fin
+$inicio = $_GET['inicio'] ?? ''; 
+$fin = $_GET['fin'] ?? '';      
 
 // Si intentan entrar sin un nombre de empresa, los devolvemos a la lista
 if (empty($nombre_emp)) {
@@ -98,14 +98,15 @@ if (empty($nombre_emp)) {
                     <?php
                     $nombre_limpio = mysqli_real_escape_string($conexion, $nombre_emp);
                     
-                    // MODIFICACIÓN DE LA CONSULTA SQL:
+                    // CORRECCIÓN DE LA CONSULTA SQL:
                     $query = "SELECT * FROM trabajos WHERE nombre_cliente = '$nombre_limpio'";
 
-                    // Si hay fechas, filtramos por ellas
+                    // Filtro por fechas corregido para ser más compatible
                     if (!empty($inicio) && !empty($fin)) {
                         $inicioClean = mysqli_real_escape_string($conexion, $inicio);
                         $finClean = mysqli_real_escape_string($conexion, $fin);
-                        $query .= " AND fecha BETWEEN '$inicioClean 00:00:00' AND '$finClean 23:59:59'";
+                        // Usamos DATE() para ignorar las horas si las hubiera y asegurar el rango exacto
+                        $query .= " AND DATE(fecha) BETWEEN '$inicioClean' AND '$finClean'";
                     }
 
                     $query .= " ORDER BY fecha DESC";
@@ -113,7 +114,7 @@ if (empty($nombre_emp)) {
                     $res = mysqli_query($conexion, $query);
                     $total_acumulado = 0;
 
-                    if(mysqli_num_rows($res) > 0){
+                    if($res && mysqli_num_rows($res) > 0){
                         while($row = mysqli_fetch_assoc($res)){
                             $total_acumulado += $row['precio_total'];
                             echo "<tr style='border-bottom:1px solid #eee;'>
@@ -131,7 +132,6 @@ if (empty($nombre_emp)) {
         </div>
     </main>
     <script>
-        // Actualizamos el total acumulado con el valor calculado por el filtro
         document.getElementById('totalFacturado').innerText = "<?php echo number_format($total_acumulado, 2, ',', '.'); ?>€";
     </script>
 </body>

@@ -128,6 +128,7 @@ include '../php/conexion.php';
                 <a href="ingresosb.php" class="btn-header">🤫 Extras</a>
                 <a href="empresas.php" class="btn-header"> 🏢 Empresas</a>
                 <a href="proveedores.php" class="btn-header"> 🚚 Proveedores</a>
+                <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <?php endif; ?>
 
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesion</a>

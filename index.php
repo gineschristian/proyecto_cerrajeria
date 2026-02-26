@@ -6,11 +6,13 @@
     <title>Login - Cerrajería Pinos</title>
     
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="img/logo_pwa_192.png">
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="img/logo_pwa_192.png">
     <meta name="theme-color" content="#2c3e50">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="img/logo_pwa_192.png">
-
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
