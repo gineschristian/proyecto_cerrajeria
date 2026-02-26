@@ -24,8 +24,22 @@ while($u = mysqli_fetch_assoc($res_u)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <link rel="manifest" href="../manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c3e50">
+    <link rel="apple-touch-icon" href="../img/logo_pwa_192.png">
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('../sw.js')
+            .then(reg => console.log('PWA lista en Gestión de Trabajos'))
+            .catch(err => console.error('Error PWA Trabajos:', err));
+        });
+      }
+    </script>
     <title>Trabajos - Cerrajería Pinos</title>
     <link rel="stylesheet" href="../css/main.css?v=3.0">
     <link rel="stylesheet" href="../css/formularios.css?v=3.0">
