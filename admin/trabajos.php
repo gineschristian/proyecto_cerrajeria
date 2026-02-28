@@ -41,204 +41,232 @@ while($u = mysqli_fetch_assoc($res_u)) {
       }
     </script>
     <title>Trabajos - Cerrajería Pinos</title>
-    <link rel="stylesheet" href="../css/main.css?v=3.0">
-    <link rel="stylesheet" href="../css/formularios.css?v=3.0">
-    <link rel="stylesheet" href="../css/trabajos_layout.css?v=3.0">
+    <link rel="stylesheet" href="--/css/header.css">
+    <link rel="stylesheet" href="../css/main.css?v=4.0">
+    <link rel="stylesheet" href="../css/formularios.css?v=4.0">
+    <link rel="stylesheet" href="../css/trabajos_layout.css?v=4.0">
     <style>
-        /* --- ESTILO DEL HEADER --- */
-        header { 
-            background-color: #2c3e50 !important; 
-            padding: 10px 15px !important;
+    /* --- ESTILO DEL HEADER --- */
+    header { 
+        background-color: #2c3e50 !important; 
+        padding: 10px 15px !important;
+        display: flex !important;
+        position: sticky; /* Crítico para que el menú se posicione debajo */
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-content h1 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        color: white; 
+    }
+
+    .logo-img { 
+        height: 40px; 
+        width: auto; 
+    }
+
+    /* --- ESTILO HAMBURGUESA --- */
+    #menu-toggle { display: none; }
+
+.hamburger {
+    display: none; /* Oculto en PC */
+    color: white;
+    font-size: 35px;
+    text-align: center;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.nav-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
+    /* ESTILO GENERAL DEL MENÚ (PC) */
+    .nav-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .btn-header {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        transition: background 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: inline-block;
+    }
+
+    .btn-header:hover { background: rgba(255, 255, 255, 0.2); }
+    
+    /* --- RESPONSIVIDAD (MÓVIL) --- */
+    @media (max-width: 1024px) {
+    .hamburger { display: block; } /* Mostrar icono en móvil */
+    
+    .nav-container {
+        display: none; /* OCULTAR MENÚ POR DEFECTO EN MÓVIL */
+        flex-direction: column;
+        gap: 5px;
+        position: absolute;
+        top: 100%; /* Ajustar según altura de header */
+        left: 0;
+        width: 100%;
+        background: #2c3e50; /* Color de fondo del header */
+        padding: 10px 0;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    /* MOSTRAR MENÚ AL HACER CLIC EN EL ICONO */
+    #menu-toggle:checked ~ .nav-container {
+        display: flex;
+    }
+
+    .btn-header { width: 90%; margin: 5px auto; text-align: center; }
+}
+    
+    /* --- RESTO DE ESTILOS --- */
+    #resumenDinero {
+        margin-top: 15px;
+        padding: 15px;
+        background: #2c3e50;
+        color: white;
+        border-radius: 8px;
+        text-align: right;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .trabajos-container-dual { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 20px; 
+        padding: 15px; 
+        box-sizing: border-box; 
+        width: 100%;
+    }
+
+    .columna-formulario { 
+        flex: 1; 
+        min-width: 0; 
+        width: 100%;
+        max-width: 420px; 
+    }
+    
+    .columna-tabla { 
+        flex: 2.5; 
+        min-width: 0; 
+        width: 100%;
+    }
+    
+    .table-card table { 
+        width: 100%; 
+        border-collapse: collapse; 
+    }
+    
+    .table-card th, .table-card td { 
+        padding: 14px 10px; 
+        vertical-align: middle; 
+        border-bottom: 1px solid #eee; 
+        text-align: left; 
+    }
+
+    .table-card tr:hover { background-color: #f8fbff; }
+    
+    .col-operario div {
+        background: #e8f4fd; 
+        padding: 5px 10px; 
+        border-radius: 20px; 
+        display: inline-block; 
+        font-weight: 600; 
+        color: #2980b9; 
+        font-size: 0.8rem; 
+        border: 1px solid #d1e9f9;
+    }
+
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .modal-content { background-color: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+
+    /* --- ESTILO EXCLUSIVO PARA EL TÍTULO EN PDF --- */
+    .titulo-impresion {
+        display: none;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 1024px) {
+        .columna-formulario, .columna-tabla {
+            min-width: 100% !important;
+            max-width: 100% !important;
+            flex: none !important;
+        }
+        .tabla-scroll-vertical {
+            overflow-x: auto !important;
+            width: 100% !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 600px; }
+    }
+
+    /* --- CONFIGURACIÓN PARA EL PDF / IMPRESIÓN --- */
+    @media print {
+        .titulo-impresion {
             display: block !important;
         }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
+        .titulo-impresion h1 {
+            margin: 0;
+            font-size: 26pt;
+            color: #2c3e50;
+            text-transform: uppercase;
+        }
+        .titulo-impresion p {
+            margin: 5px 0;
+            font-size: 12pt;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 10px;
         }
 
-        .header-content h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            color: white; 
+        header, .hamburger, .nav-container, .columna-formulario, .buscador-localidad-container, 
+        #info-filtro, .header-tabla-dinamica, .col-accion, .btn-reset, 
+        .btn-print, .btn-lupa, button, .modal {
+            display: none !important;
         }
 
-        .logo-img { 
-            height: 40px; 
-            width: auto; 
-        }
-
-        .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .btn-header {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-header:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        body { background: white !important; margin: 0; padding: 0; }
+        .trabajos-container-dual { display: block !important; padding: 0 !important; }
+        .columna-tabla { width: 100% !important; max-width: 100% !important; flex: none !important; }
+        .table-card { box-shadow: none !important; border: none !important; }
         
-        /* --- ESTILO PARA EL TOTAL --- */
+        table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt !important; }
+        th { background-color: #f1f4f6 !important; color: black !important; border: 1px solid #ddd !important; -webkit-print-color-adjust: exact; }
+        td { border: 1px solid #ddd !important; padding: 8px !important; }
+
         #resumenDinero {
-            margin-top: 15px;
-            padding: 15px;
-            background: #2c3e50;
-            color: white;
-            border-radius: 8px;
-            text-align: right;
-            font-size: 1.2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            background: #f1f4f6 !important;
+            color: black !important;
+            border: 2px solid #2c3e50 !important;
+            margin-top: 20px !important;
+            font-size: 14pt !important;
+            -webkit-print-color-adjust: exact;
         }
-
-        .trabajos-container-dual { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 20px; 
-            padding: 15px; 
-            box-sizing: border-box; 
-            width: 100%;
-        }
-
-        .columna-formulario { 
-            flex: 1; 
-            min-width: 0; 
-            width: 100%;
-            max-width: 420px; 
-        }
-        
-        .columna-tabla { 
-            flex: 2.5; 
-            min-width: 0; 
-            width: 100%;
-        }
-        
-        .table-card table { 
-            width: 100%; 
-            border-collapse: collapse; 
-        }
-        
-        .table-card th, .table-card td { 
-            padding: 14px 10px; 
-            vertical-align: middle; 
-            border-bottom: 1px solid #eee; 
-            text-align: left; 
-        }
-
-        .table-card tr:hover { background-color: #f8fbff; }
-        .col-fecha { width: 75px; }
-        .col-info { min-width: 200px; }
-        
-        .col-operario div {
-            background: #e8f4fd; 
-            padding: 5px 10px; 
-            border-radius: 20px; 
-            display: inline-block; 
-            font-weight: 600; 
-            color: #2980b9; 
-            font-size: 0.8rem; 
-            border: 1px solid #d1e9f9;
-        }
-
-        .col-factura { width: 85px; text-align: center; }
-        .col-total { width: 110px; text-align: right; white-space: nowrap; }
-        .col-accion { width: 120px; text-align: center; }
-
-        .zona-material { 
-            background: #f1f4f6; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #3498db; box-sizing: border-box; width: 100%;
-        }
-        
-        .fila-material { 
-            background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; width: 100%;
-        }
-
-        .buscador-localidad-container { background: #fff; padding: 15px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #3498db; }
-        .input-busqueda { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
-        
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background-color: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-
-        /* --- ESTILO EXCLUSIVO PARA EL TÍTULO EN PDF --- */
-        .titulo-impresion {
-            display: none;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 1024px) {
-            .columna-formulario, .columna-tabla {
-                min-width: 100% !important;
-                max-width: 100% !important;
-                flex: none !important;
-            }
-            .tabla-scroll-vertical {
-                overflow-x: auto !important;
-                width: 100% !important;
-                -webkit-overflow-scrolling: touch;
-            }
-            table { min-width: 600px; }
-        }
-
-        /* --- CONFIGURACIÓN PARA EL PDF / IMPRESIÓN --- */
-        @media print {
-            .titulo-impresion {
-                display: block !important;
-            }
-            .titulo-impresion h1 {
-                margin: 0;
-                font-size: 26pt;
-                color: #2c3e50;
-                text-transform: uppercase;
-            }
-            .titulo-impresion p {
-                margin: 5px 0;
-                font-size: 12pt;
-                border-bottom: 2px solid #2c3e50;
-                padding-bottom: 10px;
-            }
-
-            header, .nav-container, .columna-formulario, .buscador-localidad-container, 
-            #info-filtro, .header-tabla-dinamica, .col-accion, .btn-reset, 
-            .btn-print, .btn-lupa, button, .modal {
-                display: none !important;
-            }
-
-            body { background: white !important; margin: 0; padding: 0; }
-            .trabajos-container-dual { display: block !important; padding: 0 !important; }
-            .columna-tabla { width: 100% !important; max-width: 100% !important; flex: none !important; }
-            .table-card { box-shadow: none !important; border: none !important; }
-            
-            table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt !important; }
-            th { background-color: #f1f4f6 !important; color: black !important; border: 1px solid #ddd !important; -webkit-print-color-adjust: exact; }
-            td { border: 1px solid #ddd !important; padding: 8px !important; }
-
-            #resumenDinero {
-                background: #f1f4f6 !important;
-                color: black !important;
-                border: 2px solid #2c3e50 !important;
-                margin-top: 20px !important;
-                font-size: 14pt !important;
-                -webkit-print-color-adjust: exact;
-            }
-            tr { page-break-inside: avoid; }
-        }
-    </style>
+        tr { page-break-inside: avoid; }
+    }
+</style>
 </head>
 <body>
 
@@ -290,6 +318,10 @@ while($u = mysqli_fetch_assoc($res_u)) {
             </a>
             <h1>Trabajos</h1>
         </div>
+
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="hamburger">&#9776;</label>
+
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="stock.php" class="btn-header">📦 Stock</a>
@@ -307,7 +339,6 @@ while($u = mysqli_fetch_assoc($res_u)) {
             <a href="../php/logout.php" class="btn-header" style="background:#e74c3c;">Cerrar Sesión</a>
         </nav>
     </header>
-
     <main class="trabajos-container-dual"> 
         <aside class="columna-formulario">
             <div class="card-formulario">

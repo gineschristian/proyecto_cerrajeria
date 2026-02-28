@@ -27,46 +27,138 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
       }
     </script>
     <title>Empresas - Cerrajería Pinos</title>
+    <link rel="stylesheet" href="../css/header.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <style>
-        .container-empresas { padding: 20px; max-width: 1200px; margin: 0 auto; }
-        .grid-gestion { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-ver-trabajos { background: #3498db; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; transition: background 0.3s; }
-        .btn-ver-trabajos:hover { background: #2980b9; }
-        .btn-eliminar { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
-        .btn-eliminar:hover { background: #c0392b; }
-        .alerta-exito { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
-    
-        header { background-color: #2c3e50 !important; padding: 10px 15px !important; display: block !important; }
-        .header-content { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; }
-        .header-content h1 { margin: 0; font-size: 1.5rem; color: white; }
-        .logo-img { height: 40px; width: auto; }
-        .nav-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
-        .btn-header { background: rgba(255, 255, 255, 0.1); color: white; text-decoration: none; padding: 8px 12px; border-radius: 5px; font-size: 0.85rem; font-weight: 500; transition: background 0.3s; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .btn-header:hover { background: rgba(255, 255, 255, 0.2); }
+    /* --- Estilos Base --- */
+   header { 
+        background-color: #2c3e50 !important; 
+        padding: 10px 15px !important;
+        display: flex !important;
+        position: sticky; /* Crítico para que el menú se posicione debajo */
+    }
 
-        /* --- Estilos para el nuevo Filtro de Facturación --- */
-        .filtro-facturacion {
-            background: #f1f4f7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border: 1px solid #dcdfe3;
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-content h1 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        color: white; 
+    }
+
+    .logo-img { 
+        height: 40px; 
+        width: auto; 
+    }
+
+
+    /* --- LÓGICA HAMBURGUESA --- */
+    #menu-toggle { display: none; }
+
+    .hamburger {
+        display: none; /* Oculto en PC */
+        color: white;
+        font-size: 35px;
+        cursor: pointer;
+        padding: 10px;
+        order: 2; /* A la derecha del contenido */
+    }
+
+    .nav-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        order: 3; /* Debajo en móvil */
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-header {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: background 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-cerrar-header { background: #e74c3c !important; border: 1px solid #c0392b !important; }
+
+    /* --- ESTILOS DE PÁGINA (Mantenidos) --- */
+    .container-empresas { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .grid-gestion { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn-ver-trabajos { background: #3498db; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; transition: background 0.3s; }
+    .btn-ver-trabajos:hover { background: #2980b9; }
+    .btn-eliminar { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
+    .btn-eliminar:hover { background: #c0392b; }
+    .alerta-exito { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
+
+    .filtro-facturacion {
+        background: #f1f4f7;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid #dcdfe3;
+    }
+    .filtro-facturacion label { font-size: 0.85rem; font-weight: bold; color: #34495e; }
+    .input-fecha { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+    
+    /* --- RESPONSIVIDAD (Revisado) --- */
+    @media (max-width: 992px) {
+        .grid-gestion { grid-template-columns: 1fr; }
+        .filtro-facturacion { flex-direction: column; align-items: stretch; }
+    }
+
+    @media (max-width: 768px) {
+        .hamburger {
+            display: block; /* Mostrar icono en móvil */
         }
-        .filtro-facturacion label { font-size: 0.85rem; font-weight: bold; color: #34495e; }
-        .input-fecha { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
         
-        @media (max-width: 992px) {
-            .grid-gestion { grid-template-columns: 1fr; }
-            .filtro-facturacion { flex-direction: column; align-items: stretch; }
+        .nav-container {
+            display: none; /* Ocultar botones por defecto en móvil */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #2c3e50;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            gap: 10px;
+            margin-top: 0;
         }
-    </style>
+
+        /* Mostrar botones al hacer clic */
+        #menu-toggle:checked ~ .nav-container {
+            display: flex;
+        }
+        
+        .btn-header {
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 12px;
+        }
+    }
+</style>
 </head>
 <body>
     <header>
@@ -74,6 +166,8 @@ if (!isset($_SESSION['usuario_id'])) { header("Location: ../index.html"); exit; 
             <a href="dashboard.php"><img src="../img/logo.png" alt="Logo" class="logo-img"></a>
             <h1>Empresas</h1>
         </div>
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="hamburger">&#9776;</label>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="impuestos.php" class="btn-header">📊 Impuestos</a>

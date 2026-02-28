@@ -47,120 +47,172 @@ $total_general = $total_a + $total_b;
       }
     </script>
     <title>Ingresos - Cerrajería Pinos</title>
+    <link rel="stylesheet" href="../css/header.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css"> 
     <style>
-        /* Ajustes Web */
-        header { 
-            background-color: #2c3e50 !important; 
-            padding: 10px 15px !important;
-            display: block !important;
-        }
+    /* --- VARIABLES (Asegúrate de usarlas) --- */
+    :root {
+        --rojo-principal: #2c3e50;
+        --blanco: #ffffff;
+    }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
+    /* --- Ajustes Web (Revisado para hamburguesa) --- */
+    header { 
+        background-color: #2c3e50 !important; 
+        padding: 10px 15px !important;
+        display: flex !important;
+        position: sticky; /* Crítico para que el menú se posicione debajo */
+    }
 
-        .header-content h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            color: white; 
-        }
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
 
-        .logo-img { 
-            height: 40px; 
-            width: auto; 
+    .header-content h1 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        color: white; 
+    }
+
+    .logo-img { 
+        height: 40px; 
+        width: auto; 
+    }
+
+    /* --- LÓGICA HAMBURGUESA --- */
+    #menu-toggle { display: none; }
+
+    .hamburger {
+        display: none; /* Oculto en PC */
+        color: white;
+        font-size: 35px;
+        cursor: pointer;
+        padding: 10px;
+        order: 2; /* A la derecha del contenido */
+    }
+
+    .nav-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        order: 3; /* Debajo en móvil */
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-header {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: background 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* --- RESPONSIVIDAD (Móvil) --- */
+    @media (max-width: 768px) {
+        .hamburger {
+            display: block; /* Mostrar icono en móvil */
         }
 
         .nav-container {
+            display: none; /* Ocultar botones por defecto en móvil */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--rojo-principal);
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            gap: 10px;
+            margin-top: 0;
+        }
+
+        /* Mostrar botones al hacer clic (cuando el checkbox está marcado) */
+        #menu-toggle:checked ~ .nav-container {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
         }
 
         .btn-header {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 12px;
         }
 
-        .btn-header:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .tarjetas-resumen { flex-direction: column !important; }
+        .header-tabla-dinamica { flex-direction: column; gap: 15px; }
+        .filtros-fecha { width: 100%; display: flex; flex-wrap: wrap; gap: 5px; }
+        .filtros-fecha input { flex: 1; }
+    }
+
+    .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+    .print-only { display: none; }
+
+    /* --- CONFIGURACIÓN DE IMPRESIÓN (Mantenida) --- */
+    @media print {
+        header, nav, .nav-container, .btn-pdf, .btn-filtro, .btn-cancelar, .btn-reset, 
+        #modalEditarIngreso, td:last-child, th:last-child, .header-tabla-dinamica {
+            display: none !important;
         }
-        @media (max-width: 768px) {
-            .tarjetas-resumen { flex-direction: column !important; }
-            .header-tabla-dinamica { flex-direction: column; gap: 15px; }
-            .filtros-fecha { width: 100%; display: flex; flex-wrap: wrap; gap: 5px; }
-            .filtros-fecha input { flex: 1; }
+        
+        .print-only { 
+            display: block !important; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
         }
-        .nav-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
-        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .print-only { display: none; }
 
-        /* --- CONFIGURACIÓN DE IMPRESIÓN CORREGIDA --- */
-        @media print {
-            header, nav, .nav-container, .btn-pdf, .btn-filtro, .btn-cancelar, .btn-reset, 
-            #modalEditarIngreso, td:last-child, th:last-child, .header-tabla-dinamica {
-                display: none !important;
-            }
-            
-            .print-only { 
-                display: block !important; 
-                text-align: center; 
-                margin-bottom: 20px; 
-                border-bottom: 2px solid #000;
-                padding-bottom: 10px;
-            }
-
-            body { background: white !important; padding: 0; color: black; font-family: Arial, sans-serif; }
-            
-            .tabla-scroll-vertical { 
-                overflow: visible !important; 
-                height: auto !important; 
-                max-height: none !important; 
-                display: block !important;
-            }
-
-            .tarjetas-resumen { 
-                display: flex !important; 
-                flex-direction: row !important;
-                justify-content: center !important;
-                gap: 0 !important; 
-                margin: 0 auto 25px auto !important;
-                width: 70% !important; 
-            }
-            .card { 
-                flex: 1;
-                border: 1px solid #000 !important;
-                box-shadow: none !important; 
-                border-radius: 0 !important;
-                padding: 10px !important;
-                background: white !important;
-                text-align: center;
-            }
-            .card h3 { font-size: 8pt !important; margin: 0; text-transform: uppercase; }
-            .card p { font-size: 14pt !important; font-weight: bold !important; margin: 2px 0 !important; }
-            .card small { font-size: 7pt !important; }
-
-            .table-card { box-shadow: none; border: none; width: 100% !important; }
-            .user-table { width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; }
-            .user-table th { background: #eee !important; border: 1px solid #000 !important; font-size: 9pt; }
-            .user-table td { border: 1px solid #000 !important; font-size: 9pt; padding: 6px !important; }
+        body { background: white !important; padding: 0; color: black; font-family: Arial, sans-serif; }
+        
+        .tabla-scroll-vertical { 
+            overflow: visible !important; 
+            height: auto !important; 
+            max-height: none !important; 
+            display: block !important;
         }
-    </style>
+
+        .tarjetas-resumen { 
+            display: flex !important; 
+            flex-direction: row !important;
+            justify-content: center !important;
+            gap: 0 !important; 
+            margin: 0 auto 25px auto !important;
+            width: 70% !important; 
+        }
+        .card { 
+            flex: 1;
+            border: 1px solid #000 !important;
+            box-shadow: none !important; 
+            border-radius: 0 !important;
+            padding: 10px !important;
+            background: white !important;
+            text-align: center;
+        }
+        .card h3 { font-size: 8pt !important; margin: 0; text-transform: uppercase; }
+        .card p { font-size: 14pt !important; font-weight: bold !important; margin: 2px 0 !important; }
+        .card small { font-size: 7pt !important; }
+
+        .table-card { box-shadow: none; border: none; width: 100% !important; }
+        .user-table { width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; }
+        .user-table th { background: #eee !important; border: 1px solid #000 !important; font-size: 9pt; }
+        .user-table td { border: 1px solid #000 !important; font-size: 9pt; padding: 6px !important; }
+    }
+</style>
 </head>
 <body>
     <div class="print-only">
@@ -175,6 +227,8 @@ $total_general = $total_a + $total_b;
             </a>
             <h1>Ingresos</h1>
         </div>
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="hamburger">&#9776;</label>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="gastos.php" class="btn-header">💸 Gastos</a>

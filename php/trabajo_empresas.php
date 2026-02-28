@@ -79,7 +79,7 @@ if (empty($nombre_emp)) {
     <main style="padding: 20px; max-width: 1200px; margin: 0 auto;">
         <div class="card" style="background:white; padding:20px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
             <h2 style="margin:0;">Trabajos Realizados</h2>
-            <div style="text-align:right;">
+            <div style="text-align:center;">
                 <span style="color:#7f8c8d;">TOTAL FACTURADO EN PERIODO:</span>
                 <div id="totalFacturado" style="font-size:2rem; font-weight:800; color:#27ae60;">0,00€</div>
             </div>

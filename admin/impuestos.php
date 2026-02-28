@@ -41,131 +41,175 @@ include '../php/conexion.php';
       }
     </script>
     <title>Impuestos y Estrategia - Cerrajería Pinos</title>
+    <link rel="stylesheet" href="../css/header.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
     <style>
-        header { 
-            background-color: #2c3e50 !important; 
-            padding: 10px 15px !important;
-            display: block !important;
-        }
+    /* --- Estilos Base --- */
+    header { 
+        background-color: #2c3e50 !important; 
+        padding: 10px 15px !important;
+        display: flex !important;
+        position: sticky; /* Crítico para que el menú se posicione debajo */
+    }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
 
-        .header-content h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            color: white; 
-        }
+    .header-content h1 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        color: white; 
+    }
 
-        .logo-img { 
-            height: 40px; 
-            width: auto; 
-        }
+    .logo-img { 
+        height: 40px; 
+        width: auto; 
+    }
 
+    /* --- LÓGICA HAMBURGUESA --- */
+    #menu-toggle { display: none; }
+
+    .hamburger {
+        display: none; /* Oculto en PC */
+        color: white;
+        font-size: 35px;
+        cursor: pointer;
+        padding: 10px;
+        order: 2; /* A la derecha del contenido */
+    }
+
+    .nav-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        order: 3; /* Debajo en móvil */
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-header {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: background 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-cerrar-header { background: #e74c3c !important; border: 1px solid #c0392b !important; }
+
+    /* --- ESTILOS DE PÁGINA (Mantenidos) --- */
+    .grid-impuestos { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+        gap: 20px; 
+        margin-top: 20px; 
+        width: 100%;
+    }
+    .card-impuesto { 
+        padding: 25px; 
+        border-radius: 12px; 
+        color: white; 
+        text-align: center; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+    .card-impuesto:hover { transform: translateY(-5px); }
+    
+    .iva-pagar { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .iva-soportado { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .beneficio-neto { background: linear-gradient(135deg, #27ae60, #219150); }
+    
+    .card-impuesto h3 { margin-bottom: 10px; font-size: 1.1em; opacity: 0.9; }
+    .card-impuesto h2 { font-size: 2em; margin: 10px 0; }
+    
+    .simulador-box {
+        background: #f8f9f9;
+        border-left: 5px solid #3498db;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .btn-pdf {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* --- RESPONSIVIDAD (Móvil) --- */
+    @media (max-width: 768px) {
+        .hamburger {
+            display: block; /* Mostrar icono en móvil */
+        }
+        
         .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
+            display: none; /* Ocultar botones por defecto en móvil */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #2c3e50;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            gap: 10px;
+            margin-top: 0;
         }
 
+        /* Mostrar botones al hacer clic */
+        #menu-toggle:checked ~ .nav-container {
+            display: flex;
+        }
+        
         .btn-header {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-header:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .grid-impuestos { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 20px; 
-            margin-top: 20px; 
             width: 100%;
-        }
-        .card-impuesto { 
-            padding: 25px; 
-            border-radius: 12px; 
-            color: white; 
-            text-align: center; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        .card-impuesto:hover { transform: translateY(-5px); }
-        
-        .iva-pagar { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .iva-soportado { background: linear-gradient(135deg, #3498db, #2980b9); }
-        .beneficio-neto { background: linear-gradient(135deg, #27ae60, #219150); }
-        
-        .card-impuesto h3 { margin-bottom: 10px; font-size: 1.1em; opacity: 0.9; }
-        .card-impuesto h2 { font-size: 2em; margin: 10px 0; }
-        
-        /* Estilos Simulador */
-        .simulador-box {
-            background: #f8f9f9;
-            border-left: 5px solid #3498db;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 12px;
         }
         
-        .nav-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+        .filtros-fecha { flex-direction: column; width: 100%; }
+    }
 
-        /* Estilo Botón PDF */
-        .btn-pdf {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+    /* --- CONFIGURACIÓN PARA IMPRESIÓN PDF (Mantenida) --- */
+    @media print {
+        header, nav, .nav-container, .hamburger, .simulador-box, .btn-filtro, .btn-pdf, .header-tabla-dinamica button {
+            display: none !important;
         }
-
-        @media (max-width: 768px) {
-            header { flex-direction: column; padding: 15px; }
-            .filtros-fecha { flex-direction: column; width: 100%; }
+        body { background: white; padding: 0; }
+        .trabajos-layout { padding: 0; }
+        .card-impuesto {
+            box-shadow: none;
+            border: 1px solid #ccc;
+            color: black !important;
+            background: white !important;
         }
-
-        /* CONFIGURACIÓN PARA IMPRESIÓN PDF */
-        @media print {
-            header, nav, .nav-container, .simulador-box, .btn-filtro, .btn-pdf, .header-tabla-dinamica button {
-                display: none !important;
-            }
-            body { background: white; padding: 0; }
-            .trabajos-layout { padding: 0; }
-            .card-impuesto {
-                box-shadow: none;
-                border: 1px solid #ccc;
-                color: black !important;
-                background: white !important;
-            }
-            .card-impuesto h2, .card-impuesto h3 { color: black !important; }
-            .table-card { box-shadow: none; border: 1px solid #eee; }
-        }
-        
-    </style>
+        .card-impuesto h2, .card-impuesto h3 { color: black !important; }
+        .table-card { box-shadow: none; border: 1px solid #eee; }
+    }
+</style>
 </head>
 <body>
     <header>
@@ -175,6 +219,8 @@ include '../php/conexion.php';
             </a>
             <h1>Impuestos</h1>
         </div>
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="hamburger">&#9776;</label>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="gastos.php" class="btn-header">💸 Gastos</a>

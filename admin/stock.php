@@ -51,81 +51,135 @@ while($c = mysqli_fetch_assoc($res_c)) {
       }
     </script>
     <title>Stock - Cerrajería Pinos</title>
+    <link rel="stylesheet" href="../css/header.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <style>
-        /* --- ESTILOS MANTENIDOS --- */
-        header { 
-            background-color: #2c3e50 !important; 
-            padding: 10px 15px !important;
-            display: block !important;
-        }
+    /* 1. Variables Globales (Asegurate de que carguen en main.css o mantenlas aquí) */
+    :root {
+        --rojo-principal: #2c3e50;
+        --blanco: #ffffff;
+        --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
+    /* 2. Estilos del Header - IGUALES A TRABAJOS */
+    header { 
+        background-color: #2c3e50 !important; 
+        padding: 10px 15px !important;
+        display: flex !important;
+        position: sticky; /* Crítico para que el menú se posicione debajo */
+    }
 
-        .header-content h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            color: white; 
-        }
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
 
-        .logo-img { 
-            height: 40px; 
-            width: auto; 
+    .header-content h1 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        color: white; 
+    }
+
+    .logo-img { 
+        height: 40px; 
+        width: auto; 
+    }
+
+    /* 3. Lógica del Menú Hamburguesa */
+    #menu-toggle {
+        display: none;
+    }
+
+    .hamburger {
+        display: none; /* Oculto en PC */
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+        padding: 10px;
+    }
+
+    .nav-container {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn-header {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        transition: background 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: inline-block;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-cerrar-header {
+        background: #e74c3c !important;
+        border: 1px solid #c0392b !important;
+    }
+
+    /* 4. RESPONSIVIDAD (Móvil) */
+    @media (max-width: 768px) {
+        .hamburger {
+            display: block; /* Mostrar icono en móvil */
         }
 
         .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
+            display: none; /* Ocultar botones por defecto en móvil */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
             width: 100%;
+            background-color: var(--rojo-principal);
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            gap: 10px;
+        }
+
+        /* Mostrar botones al hacer clic (cuando el checkbox está marcado) */
+        #menu-toggle:checked ~ .nav-container {
+            display: flex;
         }
 
         .btn-header {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
         }
+    }
 
-        .btn-header:hover { background: rgba(255, 255, 255, 0.2); }
-        .btn-cerrar-header { background: #e74c3c !important; border: 1px solid #c0392b !important; }
+    /* --- ESTILOS DE STOCK (Mantenidos) --- */
+    .filter-container { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+    .btn-filter { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: transform 0.2s; font-size: 0.9rem; }
+    .btn-filter:active { transform: scale(0.95); }
+    .grid-stock { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+    
+    @media (max-width: 768px) {
+        .btn-filter { flex: 1; min-width: 110px; }
+    }
 
-        @media (min-width: 768px) {
-            .header-content { flex-direction: row; gap: 20px; }
-            .nav-container { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
-        }
-
-        .filter-container { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
-        .btn-filter { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: transform 0.2s; font-size: 0.9rem; }
-        .btn-filter:active { transform: scale(0.95); }
-        .grid-stock { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
-        
-        @media (max-width: 768px) {
-            .btn-filter { flex: 1; min-width: 110px; }
-        }
-
-        /* Estilo para el mini-formulario de categorías */
-        .admin-tools {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px dashed #2980b9;
-        }
-    </style>
+    .admin-tools {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px dashed #2980b9;
+    }
+</style>
 </head>
 <body>
     <header>
@@ -135,6 +189,8 @@ while($c = mysqli_fetch_assoc($res_c)) {
             </a>
             <h1>Stock</h1>
         </div>
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="hamburger">&#9776;</label>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="trabajos.php" class="btn-header">🛠️ Trabajos</a>
@@ -149,7 +205,7 @@ while($c = mysqli_fetch_assoc($res_c)) {
                 <a href="proveedores.php" class="btn-header">🚚 Proveedores</a>
                 <a href="clientes.php" class="btn-header">🗂️ Clientes</a>
             <?php endif; ?>
-            <a href="../php/logout.php" class="btn-header btn-cerrar-header">🚪 Salir</a>
+            <a href="../php/logout.php" class="btn-header btn-cerrar-header">🚪 Cerrar Sesión</a>
         </nav>
     </header>
 

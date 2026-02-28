@@ -1,0 +1,108 @@
+/* --- Variables heredadas del proyecto --- */
+:root {
+    --rojo-principal: #2c3e50;
+    --rojo-oscuro: #330104;
+    --blanco: #ffffff;
+    --sombra: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Estilos base del Header --- */
+header {
+    background-color: var(--rojo-principal);
+    color: var(--blanco);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--sombra);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+header h1 {
+    color: var(--blanco);
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* --- Lógica del Menú Hamburguesa --- */
+
+/* Ocultar el checkbox real que activa el menú */
+#menu-toggle {
+    display: none;
+}
+
+/* Estilo del icono (tres líneas) - Oculto en PC */
+.hamburger {
+    display: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+/* Contenedor de botones (PC) */
+.nav-container {
+    display: flex;
+    gap: 10px;
+}
+
+/* Estilo de los botones */
+.btn-header {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background 0.3s;
+    font-weight: bold;
+}
+
+.btn-header:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- RESPONSIVIDAD (Móviles) --- */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block; /* Mostrar icono en móvil */
+    }
+
+    .nav-container {
+        display: none; /* Ocultar botones por defecto en móvil */
+        flex-direction: column;
+        position: absolute;
+        top: 100%; /* Posicionar justo debajo del header */
+        left: 0;
+        width: 100%;
+        background-color: var(--rojo-principal);
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        box-sizing: border-box;
+    }
+
+    /* Mostrar botones al hacer clic (cuando el checkbox está marcado) */
+    #menu-toggle:checked ~ .nav-container {
+        display: flex;
+    }
+
+    .btn-header {
+        text-align: center;
+        padding: 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+}

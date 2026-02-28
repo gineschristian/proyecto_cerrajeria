@@ -46,152 +46,186 @@ $acumulado_b = $row_total['total'] ?? 0;
       }
     </script>
     <title>Extras (Caja B) - Cerrajería Pinos</title>
+    <link rel="stylesheet" href="../css/header.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
     <style>
-        header { 
-            background-color: #2c3e50 !important; 
-            padding: 10px 15px !important;
-            display: block !important;
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .header-content h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            color: white; 
-        }
-
-        .logo-img { 
-            height: 40px; 
-            width: auto; 
-        }
-
-        .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .btn-header {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-header:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                padding: 15px;
-            }
-            .btn-header {
-                font-size: 0.8rem;
-                padding: 8px 12px;
-            }
-        }
-        @media print {
-    header, 
-    .nav-container, 
-    .columna-formulario, 
-    .filtros-container, 
-    .btn-header, 
-    .btn-editar, 
-    .btn-eliminar, 
-    button {
-        display: none !important;
-    }
-
-    body {
-        background: white !important;
-        margin: 0;
-        padding: 0;
-    }
-
-    .trabajos-container-dual {
-        display: block !important;
-        width: 100% !important;
-    }
-
-    .columna-tabla {
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .header-tabla-dinamica {
+    /* --- Estilos Base --- */
+     header { 
+        background-color: #2c3e50 !important; 
+        padding: 10px 15px !important;
         display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        border-bottom: 2px solid #e67e22 !important;
-        margin-bottom: 20px !important;
-        padding-bottom: 10px !important;
+        position: sticky; /* Crítico para que el menú se posicione debajo */
     }
 
-    .contador-total {
-        background: #f8f9fa !important;
-        border: 1px solid #ddd !important;
-        padding: 10px 20px !important;
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
     }
 
-    .cifra {
-        color: black !important;
-        font-weight: bold !important;
+    .header-content h1 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        color: white; 
     }
 
-    .table-card {
-        box-shadow: none !important;
-        border: none !important;
+    .logo-img { 
+        height: 40px; 
+        width: auto; 
     }
 
-    table {
-        width: 100% !important;
-        border-collapse: collapse !important;
+    /* --- LÓGICA HAMBURGUESA --- */
+    #menu-toggle { display: none; }
+
+    .hamburger {
+        display: none; /* Oculto en PC */
+        color: white;
+        font-size: 35px;
+        cursor: pointer;
+        padding: 10px;
+        order: 2;
     }
 
-    th, td {
-        border: 1px solid #ddd !important;
-        padding: 8px !important;
-        text-align: left !important;
-        font-size: 10pt !important;
+    .nav-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        order: 3; /* Debajo en móvil */
+        width: 100%;
+        margin-top: 10px;
     }
 
-    th {
-        background-color: #f2f2f2 !important;
-        color: black !important;
+    .btn-header {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: background 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.2);
     }
-}
-    </style>
+
+    /* --- RESPONSIVIDAD (Móvil) --- */
+    @media (max-width: 768px) {
+        .hamburger {
+            display: block; /* Mostrar icono en móvil */
+        }
+        
+        .nav-container {
+            display: none; /* Ocultar botones por defecto en móvil */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #2c3e50;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            gap: 10px;
+            margin-top: 0;
+        }
+
+        /* Mostrar botones al hacer clic */
+        #menu-toggle:checked ~ .nav-container {
+            display: flex;
+        }
+        
+        .btn-header {
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 12px;
+        }
+    }
+
+    /* --- CONFIGURACIÓN DE IMPRESIÓN (Mantenida) --- */
+    @media print {
+        header, 
+        .nav-container, 
+        .hamburger,
+        .columna-formulario, 
+        .filtros-container, 
+        .btn-header, 
+        .btn-editar, 
+        .btn-eliminar, 
+        button {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        .trabajos-container-dual {
+            display: block !important;
+            width: 100% !important;
+        }
+
+        .columna-tabla {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .header-tabla-dinamica {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            border-bottom: 2px solid #e67e22 !important;
+            margin-bottom: 20px !important;
+            padding-bottom: 10px !important;
+        }
+
+        .contador-total {
+            background: #f8f9fa !important;
+            border: 1px solid #ddd !important;
+            padding: 10px 20px !important;
+        }
+
+        .cifra {
+            color: black !important;
+            font-weight: bold !important;
+        }
+
+        .table-card {
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+
+        th, td {
+            border: 1px solid #ddd !important;
+            padding: 8px !important;
+            text-align: left !important;
+            font-size: 10pt !important;
+        }
+
+        th {
+            background-color: #f2f2f2 !important;
+            color: black !important;
+        }
+
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+</style>
 </head>
 <body>
     <header>
@@ -201,6 +235,8 @@ $acumulado_b = $row_total['total'] ?? 0;
             </a>
             <h1>Control de Extras</h1>
         </div>
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="hamburger">&#9776;</label>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header" > 🏠 Panel</a>
             <a href="stock.php" class="btn-header" > 📦 Stock</a>

@@ -470,23 +470,7 @@ header h1 {
 
 /* --- SECCIÓN CORREGIDA: RESPONSIVE SOLO TABLAS --- */
 @media (max-width: 768px) {
-    /* --- INICIO CAMBIO PARA MENÚ --- */
-    .nav-container {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        padding: 10px !important;
-    }
-
-    .btn-header {
-        flex: 1 1 45% !important; /* Dos botones por fila */
-        min-width: 120px !important;
-        font-size: 0.8rem !important;
-        padding: 10px 5px !important;
-        text-align: center !important;
-    }
-    /* --- FIN CAMBIO PARA MENÚ --- */
+    /* --- CAMBIO REALIZADO: Eliminada la lógica de .nav-container y .btn-header aquí --- */
 
     /* Escondemos los encabezados de las tablas originales */
     #tablaStock thead, .user-table thead {
@@ -559,7 +543,8 @@ header h1 {
 
 /* Regla de oro: No imprimir el botón en el propio PDF */
 @media print {
-    .btn-pdf, .btn-volver, header nav, .nav-container {
+    /* --- CAMBIO REALIZADO: Eliminado .nav-container aquí --- */
+    .btn-pdf, .btn-volver {
         display: none !important;
     }
 }

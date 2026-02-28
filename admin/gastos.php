@@ -45,139 +45,182 @@ $res_prov = mysqli_query($conexion, $query_prov);
       }
     </script>
     <title>Gastos - Cerrajería Pinos</title>
+    <link rel="stylesheet" href="../css/header.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/formularios.css">
     <link rel="stylesheet" href="../css/trabajos_layout.css">
     <style>
-        /* --- ESTILOS PARA EL FILTRO DE CALENDARIO --- */
-        header { 
-            background-color: #2c3e50 !important; 
-            padding: 10px 15px !important;
-            display: block !important;
-        }
+    /* --- Ajustes Web (Integración Hamburguesa) --- */
+     header { 
+        background-color: #2c3e50 !important; 
+        padding: 10px 15px !important;
+        display: flex !important;
+        position: sticky; /* Crítico para que el menú se posicione debajo */
+    }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
 
-        .header-content h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            color: white; 
-        }
+    .header-content h1 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        color: white; 
+    }
 
-        .logo-img { 
-            height: 40px; 
-            width: auto; 
-        }
+    .logo-img { 
+        height: 40px; 
+        width: auto; 
+    }
 
+    /* --- LÓGICA HAMBURGUESA --- */
+    #menu-toggle { display: none; }
+
+    .hamburger {
+        display: none; /* Oculto en PC */
+        color: white;
+        font-size: 35px;
+        cursor: pointer;
+        padding: 10px;
+        order: 2;
+    }
+
+    .nav-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        order: 3; /* Debajo en móvil */
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-header {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: background 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-cerrar-header { background: #e74c3c !important; border: 1px solid #c0392b !important; }
+
+    /* --- ESTILOS DE PÁGINA (Mantenidos) --- */
+    .contenedor-filtros {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fdf2f2;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #f5b7b1;
+        flex-wrap: wrap;
+    }
+    .filtro-fecha {
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: inherit;
+    }
+    .btn-filtrar-fecha {
+        background: #c0392b;
+        color: white;
+        border: none;
+        padding: 7px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-limpiar-fecha {
+        background: #95a5a6;
+        color: white;
+        border: none;
+        padding: 7px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .input-style { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-top: 5px; }
+    .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-left: 10px; }
+    .print-only { display: none; }
+
+    /* --- RESPONSIVIDAD (Revisado) --- */
+    @media (max-width: 992px) {
+        .trabajos-container-dual { display: flex; flex-direction: column; gap: 20px; padding: 10px; }
+        .columna-formulario, .columna-tabla { width: 100% !important; }
+        .header-tabla-dinamica { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
+        .contenedor-filtros { justify-content: center; }
+    }
+
+    @media (max-width: 768px) {
+        .hamburger {
+            display: block; /* Mostrar icono en móvil */
+        }
+        
         .nav-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .btn-header {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-header:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .contenedor-filtros {
-            display: flex;
-            align-items: center;
+            display: none; /* Ocultar botones por defecto en móvil */
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #2c3e50;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
             gap: 10px;
-            background: #fdf2f2;
+            margin-top: 0;
+        }
+
+        /* Mostrar botones al hacer clic */
+        #menu-toggle:checked ~ .nav-container {
+            display: flex;
+        }
+        
+        .btn-header {
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
             padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #f5b7b1;
-            flex-wrap: wrap;
         }
-        .filtro-fecha {
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-        }
-        .btn-filtrar-fecha {
-            background: #c0392b;
-            color: white;
-            border: none;
-            padding: 7px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-limpiar-fecha {
-            background: #95a5a6;
-            color: white;
-            border: none;
-            padding: 7px 15px;
-            border-radius: 5px;
-            cursor: pointer;
+    }
+
+    /* --- CONFIGURACIÓN DE IMPRESIÓN (Mantenida) --- */
+    @media print {
+        header, nav, .nav-container, .columna-formulario, .btn-pdf, .contenedor-filtros,
+        #modalEditarGasto, .btn-guardar, .btn-cancelar, 
+        th:last-child, td:last-child {
+            display: none !important;
         }
 
-        /* --- ESTILOS WEB ORIGINALES --- */
-        @media (max-width: 992px) {
-            .trabajos-container-dual { display: flex; flex-direction: column; gap: 20px; padding: 10px; }
-            .columna-formulario, .columna-tabla { width: 100% !important; }
-            .header-tabla-dinamica { flex-direction: column; align-items: center; text-align: center; gap: 15px; }
-            .contenedor-filtros { justify-content: center; }
-        }
-        .nav-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
-        .input-style { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-top: 5px; }
-        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-left: 10px; }
-        .print-only { display: none; }
+        body { background: white !important; margin: 0 !important; padding: 0 !important; }
+        .trabajos-container-dual { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        .columna-tabla { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+        .table-card { box-shadow: none !important; border: none !important; width: 100% !important; padding: 0 !important; }
 
-        @media (max-width: 768px) {
-            header { flex-direction: column; padding: 15px; }
-            .btn-header { font-size: 0.8rem; padding: 8px 12px; }
-        }
+        .user-table { display: table !important; width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; }
+        .user-table thead { display: table-header-group !important; }
+        .user-table tr { display: table-row !important; }
+        .user-table th, .user-table td { display: table-cell !important; border: 1px solid #000 !important; padding: 6px !important; font-size: 9pt !important; text-align: left !important; }
+        .user-table td::before { content: none !important; display: none !important; }
 
-        /* ----------------------------------------------------------------
-            CONFIGURACIÓN PDF: SIN ACCIÓN Y ANCHO COMPLETO
-        ------------------------------------------------------------------- */
-        @media print {
-            header, nav, .nav-container, .columna-formulario, .btn-pdf, .contenedor-filtros,
-            #modalEditarGasto, .btn-guardar, .btn-cancelar, 
-            th:last-child, td:last-child {
-                display: none !important;
-            }
-
-            body { background: white !important; margin: 0 !important; padding: 0 !important; }
-            .trabajos-container-dual { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .columna-tabla { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-            .table-card { box-shadow: none !important; border: none !important; width: 100% !important; padding: 0 !important; }
-
-            .user-table { display: table !important; width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; }
-            .user-table thead { display: table-header-group !important; }
-            .user-table tr { display: table-row !important; }
-            .user-table th, .user-table td { display: table-cell !important; border: 1px solid #000 !important; padding: 6px !important; font-size: 9pt !important; text-align: left !important; }
-            .user-table td::before { content: none !important; display: none !important; }
-
-            .print-only { display: block !important; text-align: center; margin-bottom: 15px; border-bottom: 1px solid #000; padding-bottom: 10px; }
-            .header-tabla-dinamica { display: flex !important; justify-content: center !important; margin-bottom: 15px !important; }
-            .header-tabla-dinamica h2 { display: none !important; }
-            .contador-total { background: #f5b7b1 !important; border: 1px solid #000 !important; width: auto !important; min-width: 250px; padding: 8px 20px !important; border-radius: 0 !important; }
-            .tabla-scroll-vertical { overflow: visible !important; height: auto !important; }
-        }
-    </style>
+        .print-only { display: block !important; text-align: center; margin-bottom: 15px; border-bottom: 1px solid #000; padding-bottom: 10px; }
+        .header-tabla-dinamica { display: flex !important; justify-content: center !important; margin-bottom: 15px !important; }
+        .header-tabla-dinamica h2 { display: none !important; }
+        .contador-total { background: #f5b7b1 !important; border: 1px solid #000 !important; width: auto !important; min-width: 250px; padding: 8px 20px !important; border-radius: 0 !important; }
+        .tabla-scroll-vertical { overflow: visible !important; height: auto !important; }
+    }
+</style>
 </head>
 <body>
     <div class="print-only">
@@ -192,6 +235,8 @@ $res_prov = mysqli_query($conexion, $query_prov);
             </a>
             <h1>Gastos</h1>
         </div>
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="hamburger">&#9776;</label>
         <nav class="nav-container">
             <a href="dashboard.php" class="btn-header">🏠 Panel</a>
             <a href="impuestos.php" class="btn-header">📊 Impuestos</a>
