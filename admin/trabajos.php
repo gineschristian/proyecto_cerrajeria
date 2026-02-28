@@ -251,7 +251,6 @@ while($u = mysqli_fetch_assoc($res_u)) {
         .trabajos-container-dual { display: block !important; padding: 0 !important; }
         .columna-tabla { width: 100% !important; max-width: 100% !important; flex: none !important; }
         .table-card { box-shadow: none !important; border: none !important; }
-        
         table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt !important; }
         th { background-color: #f1f4f6 !important; color: black !important; border: 1px solid #ddd !important; -webkit-print-color-adjust: exact; }
         td { border: 1px solid #ddd !important; padding: 8px !important; }
